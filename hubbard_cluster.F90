@@ -97,7 +97,7 @@ contains
 		H=>cluster_Hamiltonian(cluster%hop,cluster%bas)
 		call cluster_comm_matrix(H)
 		ne=0
-		q=m*4/3
+		q=m*5/3
 		pinit=m/4		
 		eps=1.d-5
 		allocate(D(q))
@@ -105,7 +105,7 @@ contains
 		iter=n
 		do while(ne<m)
 			CALL MINVAL(n,q,pinit,m,iter,eps,OP,ne,D,X,IECODE)
-			print *,ne
+			!print *,ne
 		end do
 	end subroutine
 

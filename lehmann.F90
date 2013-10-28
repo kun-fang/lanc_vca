@@ -34,7 +34,7 @@ module lehmann
 		real(kind=8)::Tep
 		Tep=cluster%hop%Tep
 		n=cluster%nbas
-		ne=50
+		ne=100
 		call cluster_solver(cluster,ne,e,X)
 		Z=>partition(ne,e,Tep,omega)
 		Q=>Q_Matrix(cluster,ne,Tep)
