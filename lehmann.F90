@@ -24,20 +24,20 @@ module lehmann
 
 !--------------------public--------------------
 
-	function lehmann_init(cluster,omega) result(Q)
+	function lehmann_init(cluster,omega,ne) result(Q)
 		implicit none
 		type(hubbard_cluster_type),pointer,intent(in)::cluster
 		real(kind=8),intent(out)::omega
 		type(Q_type),pointer::Q
-		integer::i,j,k,n,ne
+		integer::i,j,k,ne,m
 		complex(8)::sum
 		real(kind=8)::Tep
 		Tep=cluster%hop%Tep
-		n=cluster%nbas
-		ne=100
-		call cluster_solver(cluster,ne,e,X)
-		Z=>partition(ne,e,Tep,omega)
-		Q=>Q_Matrix(cluster,ne,Tep)
+		m=ne
+		call cluster_solver(cluster,m,e,X)
+		if(m>ne) ne=m
+		Z=>partition(m,e,Tep,omega)
+		Q=>Q_Matrix(cluster,m,Tep)
 		deallocate(e)
 		deallocate(X)
 		deallocate(Z)

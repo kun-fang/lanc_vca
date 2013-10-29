@@ -13,6 +13,7 @@ module hubbard_mod
 	end type hubbard_cluster_type
 
 	type(real_matrix),private,pointer::comm_matrix=>NULL()
+	real(8),private,parameter::ediff=4.d0
 	
 
 contains
@@ -90,23 +91,33 @@ contains
 		type(hubbard_cluster_type),pointer,intent(in)::cluster
 		real(8),pointer::D(:),X(:,:)
 		type(real_matrix),pointer::H
-		integer::n,m,orbit,ne,IECODE,q,pinit,iter
+		integer::n,m,orbit,ne,IECODE,q,pinit,iter,i
 		real(kind=8)::eps
 		n=cluster%nbas
 		orbit=cluster%nsite
 		H=>cluster_Hamiltonian(cluster%hop,cluster%bas)
 		call cluster_comm_matrix(H)
-		ne=0
-		q=m*5/3
-		pinit=m/4		
-		eps=1.d-5
-		allocate(D(q))
-		allocate(X(n,q))
-		iter=n
-		do while(ne<m)
-			CALL MINVAL(n,q,pinit,m,iter,eps,OP,ne,D,X,IECODE)
-			!print *,ne
+		do
+			ne=0
+			q=m*5/3
+			pinit=m/4
+			eps=1.d-5
+			allocate(D(q))
+			allocate(X(n,q))
+			iter=n
+			do while(ne<m)
+				CALL MINVAL(n,q,pinit,m,iter,eps,OP,ne,D,X,IECODE)
+				print *,ne
+			end do
+			if(D(ne)-D(1)>ediff) exit
+			deallocate(D)
+			deallocate(X)
+			m=m+20
 		end do
+		do i=ne,1,-1
+			if(D(ne)-D(1)<=ediff) exit
+		end do
+		m=i
 	end subroutine
 
 	subroutine OP(n,x,y)

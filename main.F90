@@ -21,9 +21,16 @@ program hubbard_cluster
 	norb=nsite
 	bas=>basis_init(norb)
 	cluster=>hubbard_init(cl,bas)
-	do i=1,21
+	write(*,*)"----------------------------------------------------------------"
+	write(*,*)"VCA calculation: initial parameters are"
+	write(*,*)"U=",cluster%hop%U,"mu=",cluster%hop%lmu
+	write(*,*)"t=",cluster%hop%lt
+	write(*,*)"Cluster t=",cluster%hop%ct
+	write(*,*)"Cluster mu=",cluster%hop%cmu
+	write(*,*)"----------------------------------------------------------------"
+	do i=1,11
 		print *,cluster%hop%M,VCA_potthoff_functional(cluster)
-		cluster%hop%M=cluster%hop%M+0.02
+		cluster%hop%M=cluster%hop%M+0.04
 	end do
 	call hubbard_clean(cluster)
 	print *,cputime(),"seconds"

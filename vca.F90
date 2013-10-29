@@ -8,7 +8,7 @@ module VCA
 	complex(kind=8),private,parameter::Zero=(0.0,0.0),One=(1.0,0.0),Xi=(0.0,1.0)
 	real(kind=8),private,parameter::eps=0.001
 	integer,private,parameter::nk=20
-
+	integer,private::initm=150
 
 	contains
 
@@ -23,7 +23,7 @@ module VCA
 		if(.not.associated(cluster)) return
 		orbit=cluster%nsite
 		!---> spin up
-		Q=>lehmann_init(cluster,omega)
+		Q=>lehmann_init(cluster,omega,initm)
 		if(.not.associated(Q)) return
 		x=(omega+lehmann_potthoff_functional(cluster,Q)+cluster%hop%shift)/orbit
 		!write(*,'(4F20.15)') cluster%hop%ct,cluster%hop%cmu,x
