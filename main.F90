@@ -28,9 +28,10 @@ program hubbard_cluster
 	write(*,*)"Cluster t=",cluster%hop%ct
 	write(*,*)"Cluster mu=",cluster%hop%cmu
 	write(*,*)"----------------------------------------------------------------"
-	do i=1,11
+	do i=1,21
 		print *,cluster%hop%M,VCA_potthoff_functional(cluster)
-		cluster%hop%M=cluster%hop%M+0.04
+        exit
+		cluster%hop%M=cluster%hop%M+0.02
 	end do
 	call hubbard_clean(cluster)
 	print *,cputime(),"seconds"

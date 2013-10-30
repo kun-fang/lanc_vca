@@ -29,15 +29,13 @@ module lehmann
 		type(hubbard_cluster_type),pointer,intent(in)::cluster
 		real(kind=8),intent(out)::omega
 		type(Q_type),pointer::Q
-		integer::i,j,k,ne,m
+		integer::i,j,k,ne
 		complex(8)::sum
 		real(kind=8)::Tep
 		Tep=cluster%hop%Tep
-		m=ne
-		call cluster_solver(cluster,m,e,X)
-		if(m>ne) ne=m
-		Z=>partition(m,e,Tep,omega)
-		Q=>Q_Matrix(cluster,m,Tep)
+		call cluster_solver(cluster,ne,e,X)
+		Z=>partition(ne,e,Tep,omega)
+		Q=>Q_Matrix(cluster,ne,Tep)
 		deallocate(e)
 		deallocate(X)
 		deallocate(Z)

@@ -13,7 +13,7 @@ module hubbard_mod
 	end type hubbard_cluster_type
 
 	type(real_matrix),private,pointer::comm_matrix=>NULL()
-	real(8),private,parameter::ediff=4.d0
+	real(8),private,parameter::ediff=3.5d0
 	
 
 contains
@@ -99,25 +99,24 @@ contains
 		call cluster_comm_matrix(H)
 		do
 			ne=0
-			q=m*5/3
-			pinit=m/4
+			q=m*3
+			if(q>n) q=n
+			pinit=m
 			eps=1.d-5
 			allocate(D(q))
 			allocate(X(n,q))
 			iter=n
 			do while(ne<m)
 				CALL MINVAL(n,q,pinit,m,iter,eps,OP,ne,D,X,IECODE)
-				print *,ne
+				!print *,ne
 			end do
 			if(D(ne)-D(1)>ediff) exit
 			deallocate(D)
 			deallocate(X)
 			m=m+20
 		end do
-		do i=ne,1,-1
-			if(D(ne)-D(1)<=ediff) exit
-		end do
-		m=i
+		call cluster_clear_comm()
+		call real_matrix_del(H)
 	end subroutine
 
 	subroutine OP(n,x,y)

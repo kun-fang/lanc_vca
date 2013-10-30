@@ -1,6 +1,7 @@
 module underwood_mod
 
 	integer,private,parameter::INMAX=10000
+	real(8),private,save::ERRC
 
 contains
 
@@ -38,7 +39,7 @@ contains
 		REAL(8) D(Q) , X(N,Q)
 		INTEGER IECODE
 		REAL(8) E(Q) , C(Q,Q)
-		REAL(8) U(INMAX) , V(INMAX) , ERRC
+		REAL(8) U(INMAX) , V(INMAX)
 		INTEGER P , S , PS , K , ITER , IMM , NCONV
 !
 !------
@@ -252,7 +253,7 @@ contains
 !     that have converged is stored in NCONV. If NCONV=0, then none
 !     have converged.
 !------
-				CALL CNVTST(N,Q,M,P,ERRC,EPS,D,E,NCONV)
+				CALL CNVTST(N,Q,M,P,EPS,D,E,NCONV)
 !
 !------
 !     PCH chooses new values for P and S, the block size and the
@@ -452,7 +453,7 @@ contains
 !
 !
 !
-	SUBROUTINE CNVTST(N,Q,M,P,ERRC,EPS,D,E,NCONV)
+	SUBROUTINE CNVTST(N,Q,M,P,EPS,D,E,NCONV)
 !===========================================================
 !     CNVTST determines which of the P eigenvalues stored
 !     in elements M+1 through M+P of D have converged. ERRC
@@ -469,7 +470,7 @@ contains
 		INTEGER N , Q , M , P
 		REAL(8) EPS
 		REAL(8) D(Q) , E(Q)
-		REAL(8) ERRC , T , DSQRT
+		REAL(8) T , DSQRT
 		INTEGER NCONV , K , I
 		REAL(8) , PARAMETER :: CHEPS = 2.22D-16
 !
