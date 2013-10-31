@@ -9,9 +9,8 @@ program hubbard_cluster
 	type(hubbard_cluster_type),pointer::cluster
 	type(real_matrix),pointer::M
 	type(Q_type),pointer::Q
-	integer::n,nsite,norb,r,i
-	real(8)::omega
-	real(8),pointer::D(:),X(:,:)
+	integer::n,nsite,norb,i
+	real(8)::omega,density
 	complex(8),parameter::Zero=(0.0,0.0),One=(1.0,0.0),Xi=(0.0,1.0)
 	character(len=30)::filename
 	call timer_init()
@@ -28,11 +27,18 @@ program hubbard_cluster
 	write(*,*)"Cluster t=",cluster%hop%ct
 	write(*,*)"Cluster mu=",cluster%hop%cmu
 	write(*,*)"----------------------------------------------------------------"
-	do i=1,21
-		print *,cluster%hop%M,VCA_potthoff_functional(cluster)
-        exit
-		cluster%hop%M=cluster%hop%M+0.02
-	end do
+	!call VCA_fermi_surface(cluster)
+	if(VCA_connect_cluster(cluster)) then
+		call VCA_optimal(omega,density)
+		!do i=0,10
+		!	print *,cluster%hop%M,VCA_potthoff_functional()
+		!	cluster%hop%M=cluster%hop%M+0.03
+		!end do
+		!call VCA_spectral_function()
+		!call VCA_DOS(-3.d0,3.d0,40)
+		!call VCA_fermi_surface()
+		call VCA_disconnect_cluster()
+	end if
 	call hubbard_clean(cluster)
 	print *,cputime(),"seconds"
 end program hubbard_cluster

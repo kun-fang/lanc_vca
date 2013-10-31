@@ -10,7 +10,8 @@ module hop_mod
 		integer,pointer,dimension(:,:)::lattice
 		integer,pointer,dimension(:,:)::cluster
 		real(8),pointer,dimension(:)::lt,ct
-		real(8)::lmu=0.d0,cmu=0.d0,U=0.d0,Tep=0.d0,M=0.d0,delta=0.d0,D=0.d0,h=0.d0,shift=0.d0
+		real(8)::lmu=0.d0,U=0.d0,Tep=0.d0,shift=0.d0
+		real(8)::cmu=0.d0,M=0.d0,delta=0.d0,D=0.d0,h=0.d0
 		character(len=20)::SY=""
 	end type hop
 
@@ -154,7 +155,11 @@ module hop_mod
 				case default
 					cycle
 			end select
-			cl%SY=trim(cl%SY)//trim(sy)
+			if(trim(sy)=="SC") then
+				cl%SY=trim(sy)//trim(cl%SY)
+			else
+				cl%SY=trim(cl%SY)//trim(sy)
+			end if
 		end do
 		close(8)
 	end function
@@ -188,7 +193,7 @@ module hop_mod
 				case("AF")
 					call cluster_AF(cl,tprime)
 				case("SC")
-					call cluster_SC(cl,tprime)
+					call cluster_SC(cl,1,tprime)
 				case("NM")
 					call cluster_NM(cl,1,2,tprime)
 					call cluster_NM(cl,3,4,tprime)
@@ -213,12 +218,12 @@ module hop_mod
 		end do
 	end subroutine
 
-	subroutine cluster_SC(cl,tprime)
+	subroutine cluster_SC(cl,ty,tprime)
 		implicit none
 		type(hop),pointer::cl
 		complex(8),pointer::tprime(:,:)
 		real(8)::v(2),PI,leng
-		integer::i,j,site
+		integer::i,j,site,ty
 		site=cl%site
 		PI=asin(1.d0)*2
 		do i=1+site,2*site
@@ -230,59 +235,67 @@ module hop_mod
 		do i=1,site
 			tprime(i,i)=tprime(i,i)+cl%U
 		end do
-		!-------s-wave SC--------
-!		do i=1,site
-!			tprime(i,site+i)=tprime(i,site+i)-cl%D
-!			tprime(site+i,i)=conjg(tprime(i,site+i))
-!		end do
-		!------------------------
-		!---d_(x^2-y^2)-wave SC--
-!		do i=1,site
-!			do j=i+1,site
-!				v(1:2)=cl%coordinate(1:2,i)-cl%coordinate(1:2,j)
-!				tprime(i,j+site)=tprime(i,j+site)-cl%D*(cos(v(1)*PI/2)-cos(v(2)*PI/2))
-!				tprime(j+site,i)=conjg(tprime(i,j+site))
-!			end do
-!		end do
-		!------------------------
-		!---d_(xy)-wave SC--
-!		do i=1,site
-!			do j=i+1,site
-!				v(1:2)=cl%coordinate(1:2,i)-cl%coordinate(1:2,j)
-!				tprime(i,j+site)=tprime(i,j+site)-cl%D*(sin(v(1)*PI/2)*sin(v(2)*PI/2))
-!				tprime(j+site,i)=conjg(tprime(i,j+site))
-!			end do
-!		end do
-		!------------------------
-		!---d_(s extend)-wave SC--
-!		do i=1,site
-!			do j=i+1,site
-!				v(1:2)=cl%coordinate(1:2,i)-cl%coordinate(1:2,j)
-!				tprime(i,j+site)=tprime(i,j+site)-cl%D*(cos(v(1)*PI/2)+cos(v(2)*PI/2))
-!				tprime(j+site,i)=conjg(tprime(i,j+site))
-!			end do
-!		end do
-		!------------------------
-		!---s_(+/-)-wave SC--
-!		do i=1,site
-!			do j=i+1,site
-!				v(1:2)=cl%coordinate(1:2,i)-cl%coordinate(1:2,j)
-!				tprime(i,j+site)=tprime(i,j+site)-cl%D*(cos(v(1)*PI/2)*cos(v(2)*PI/2))
-!				tprime(j+site,i)=conjg(tprime(i,j+site))
-!			end do
-!		end do
-		!------------------------
-		!------------------------
-		!---d+id-wave SC--
-		do i=1,site
-			do j=i+1,site
-				v(1:2)=cl%coordinate(1:2,i)-cl%coordinate(1:2,j)
-				leng=sqrt(dot_product(v,v))
-				tprime(i,j+site)=tprime(i,j+site)-cl%D*(((v(1)/leng)*(v(1)/leng)-(v(2)/leng)*(v(2)/leng))+Xi*((v(1)/leng)*(v(2)/leng)))
-				tprime(j+site,i)=conjg(tprime(i,j+site))
+		select case(ty)
+		case(1)
+			!-------s-wave SC--------
+			do i=1,site
+				tprime(i,site+i)=tprime(i,site+i)-cl%D
+				tprime(site+i,i)=conjg(tprime(i,site+i))
 			end do
-		end do
-		!------------------------
+			!------------------------
+		case(2)
+			!---d_(x^2-y^2)-wave SC--
+			do i=1,site
+				do j=i+1,site
+					v(1:2)=cl%coordinate(1:2,i)-cl%coordinate(1:2,j)
+					tprime(i,j+site)=tprime(i,j+site)-cl%D*(cos(v(1)*PI/2)-cos(v(2)*PI/2))
+					tprime(j+site,i)=conjg(tprime(i,j+site))
+				end do
+			end do
+			!------------------------
+		case(3)
+			!---d_(xy)-wave SC--
+			do i=1,site
+				do j=i+1,site
+					v(1:2)=cl%coordinate(1:2,i)-cl%coordinate(1:2,j)
+					tprime(i,j+site)=tprime(i,j+site)-cl%D*(sin(v(1)*PI/2)*sin(v(2)*PI/2))
+					tprime(j+site,i)=conjg(tprime(i,j+site))
+				end do
+			end do
+			!------------------------
+		case(4)
+			!---d_(s extend)-wave SC--
+			do i=1,site
+				do j=i+1,site
+					v(1:2)=cl%coordinate(1:2,i)-cl%coordinate(1:2,j)
+					tprime(i,j+site)=tprime(i,j+site)-cl%D*(cos(v(1)*PI/2)+cos(v(2)*PI/2))
+					tprime(j+site,i)=conjg(tprime(i,j+site))
+				end do
+			end do
+			!------------------------
+		case(5)
+			!---s_(+/-)-wave SC--
+			do i=1,site
+				do j=i+1,site
+					v(1:2)=cl%coordinate(1:2,i)-cl%coordinate(1:2,j)
+					tprime(i,j+site)=tprime(i,j+site)-cl%D*(cos(v(1)*PI/2)*cos(v(2)*PI/2))
+					tprime(j+site,i)=conjg(tprime(i,j+site))
+				end do
+			end do
+			!------------------------
+		case(6)
+			!---d+id-wave SC--
+			do i=1,site
+				do j=i+1,site
+					v(1:2)=cl%coordinate(1:2,i)-cl%coordinate(1:2,j)
+					leng=sqrt(dot_product(v,v))
+					tprime(i,j+site)=tprime(i,j+site)-cl%D*(((v(1)/leng)*(v(1)/leng)-(v(2)/leng)*(v(2)/leng))+Xi*((v(1)/leng)*(v(2)/leng)))
+					tprime(j+site,i)=conjg(tprime(i,j+site))
+				end do
+			end do
+			!------------------------
+		case default
+		end select
 	end subroutine
 	
 	subroutine cluster_NM(cl,i,j,tprime)

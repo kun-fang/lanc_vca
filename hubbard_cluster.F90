@@ -77,12 +77,12 @@ contains
 		deallocate(t)
 	end function
 
-	subroutine cluster_comm_matrix(M)
+	subroutine cluster_connect_matrix(M)
 		type(real_matrix),pointer::M
 		comm_matrix=>M
 	end subroutine
 
-	subroutine cluster_clear_comm()
+	subroutine cluster_disconnect_matrix()
 		comm_matrix=>NULL()
 	end subroutine
 
@@ -96,7 +96,7 @@ contains
 		n=cluster%nbas
 		orbit=cluster%nsite
 		H=>cluster_Hamiltonian(cluster%hop,cluster%bas)
-		call cluster_comm_matrix(H)
+		call cluster_connect_matrix(H)
 		do
 			ne=0
 			q=m*3
@@ -115,7 +115,7 @@ contains
 			deallocate(X)
 			m=m+20
 		end do
-		call cluster_clear_comm()
+		call cluster_disconnect_matrix()
 		call real_matrix_del(H)
 	end subroutine
 
@@ -125,6 +125,12 @@ contains
 		call real_matrix_product(comm_matrix,x,y)
 	end subroutine
 
-
-
+	function cluster_get_n_orbit(cluster) result(n)
+		implicit none
+		type(hubbard_cluster_type),pointer,intent(in)::cluster
+		integer::n
+		n=cluster%nsite
+	end function
+	
+	
 end module hubbard_mod
