@@ -4,7 +4,7 @@ module hop_mod
 	complex(8),private,parameter::Zero=(0.0,0.0),Xi=(0.0,1.0)
 
 	type,public::hop
-		integer::site,dim,nlt,nct,nambu=0
+		integer::site,dim,nlt,nct,nambu=0,scty=0
 		real,pointer,dimension(:,:)::coordinate
 		real,pointer,dimension(:,:)::vector
 		integer,pointer,dimension(:,:)::lattice
@@ -59,7 +59,7 @@ module hop_mod
 
 	function cluster_init() result(cl)
 		type(hop),pointer::cl
-		character(len=20)::filename,sy,rc
+		character(len=20)::filename,sy,rc,a
 		real(8),allocatable::tr(:,:)
 		complex(8),pointer::test(:,:)
 		integer::site,dim,i,j,k,ierr
@@ -142,10 +142,11 @@ module hop_mod
 		do
 			read(8,*,iostat=ierr) sy
 			if(ierr/=0) exit
-			select case(trim(sy))
+			select case(sy(1:2))
 				case("AF")
 					read(8,*) rc,cl%M
 				case("SC")
+					cl%scty=ichar(sy(3:3))-48
 					cl%nambu=1
 					read(8,*) rc,cl%D
 				case("NM")
@@ -155,10 +156,10 @@ module hop_mod
 				case default
 					cycle
 			end select
-			if(trim(sy)=="SC") then
-				cl%SY=trim(sy)//trim(cl%SY)
+			if(sy(1:2)=="SC") then
+				cl%SY=sy(1:2)//trim(cl%SY)
 			else
-				cl%SY=trim(cl%SY)//trim(sy)
+				cl%SY=trim(cl%SY)//sy(1:2)
 			end if
 		end do
 		close(8)
@@ -193,7 +194,7 @@ module hop_mod
 				case("AF")
 					call cluster_AF(cl,tprime)
 				case("SC")
-					call cluster_SC(cl,1,tprime)
+					call cluster_SC(cl,tprime)
 				case("NM")
 					call cluster_NM(cl,1,2,tprime)
 					call cluster_NM(cl,3,4,tprime)
@@ -218,7 +219,7 @@ module hop_mod
 		end do
 	end subroutine
 
-	subroutine cluster_SC(cl,ty,tprime)
+	subroutine cluster_SC(cl,tprime)
 		implicit none
 		type(hop),pointer::cl
 		complex(8),pointer::tprime(:,:)
@@ -235,7 +236,7 @@ module hop_mod
 		do i=1,site
 			tprime(i,i)=tprime(i,i)+cl%U
 		end do
-		select case(ty)
+		select case(cl%scty)
 		case(1)
 			!-------s-wave SC--------
 			do i=1,site

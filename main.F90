@@ -29,11 +29,11 @@ program hubbard_cluster
 	write(*,*)"----------------------------------------------------------------"
 	!call VCA_fermi_surface(cluster)
 	if(VCA_connect_cluster(cluster)) then
-		call VCA_optimal(omega,density)
-		!do i=0,10
-		!	print *,cluster%hop%M,VCA_potthoff_functional()
-		!	cluster%hop%M=cluster%hop%M+0.03
-		!end do
+		if(VCA_optimal(omega)) print *,cluster%hop%cmu,cluster%hop%ct,omega,VCA_particle_density()
+		do i=0,10
+			cluster%hop%D=cluster%hop%D+0.02
+			print *,cluster%hop%D,VCA_potthoff_functional()
+		end do
 		!call VCA_spectral_function()
 		!call VCA_DOS(-3.d0,3.d0,40)
 		!call VCA_fermi_surface()

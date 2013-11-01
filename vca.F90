@@ -15,12 +15,14 @@ module VCA
 
 	contains
 
-	subroutine VCA_optimal(omega,density)
+	function VCA_optimal(omega) result(OK)
 		implicit none
 		integer::n_var,i,ie
-		real(8)::omega,density
+		real(8)::omega
 		real(8),allocatable::realv(:)
 		type(PointArray),pointer::v(:)
+		logical::OK
+		OK=.false.
 		call varinit(n_var,v)
 		open(unit=9,file='optim.data',status='old',iostat=ie)
 		if(ie==0) then
@@ -35,20 +37,22 @@ module VCA
 		end if
 		if(qnewton_connect(n_var,v)) then
 			call qnewton_run(VCA_potthoff_functional,omega)
+			OK=.true.
 			call qnewton_disconnect()
 		end if
 		deallocate(v)
-	end subroutine
+	end function
 	
 	subroutine varinit(n,v)
 		implicit none
 		type(PointArray),pointer::v(:)
 		integer::n
-		n=1
+		n=2
 		allocate(v(n))
-		!v(2)%pp=>cluster%hop%cmu
-		v(1)%pp=>cluster%hop%M
+		v(2)%pp=>cluster%hop%cmu
+		v(1)%pp=>cluster%hop%ct(1)
 		!v(2)=cluster%ty
+		!write(7,*) "n=",n
 	end subroutine
 
 	function VCA_connect_cluster(p) result(OK)
