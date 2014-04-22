@@ -1,6 +1,6 @@
 module underwood_mod
 
-	integer,private,parameter::INMAX=10000
+	integer,private,parameter::INMAX=1000000
 	real(8),private,save::ERRC
 
 contains

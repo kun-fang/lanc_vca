@@ -13,9 +13,9 @@ module lehmann
 		type(Q_type),pointer::next
 	end type Q_type
 	
-		real(kind=8),pointer,dimension(:),private::Z,e
-		real(kind=8),pointer,dimension(:,:),private::X
-		integer,private::ne
+	real(kind=8),pointer,dimension(:),private::Z,e
+	real(kind=8),pointer,dimension(:,:),private::X
+	integer,private::ne
 	public::lehmann_init,lehmann_Q_clean,lehmann_potthoff_functional,lehmann_green_function,hop_cluster,hop_lattice
 
 	private::Q_matrix,newnode,partition,Trln,get_M,get_w,c_cplus

@@ -2,16 +2,12 @@ module VCA
 	use hubbard_mod
 	use lehmann
 	use qnewton
-	!use optimal
-	!use cmatrix
-	!use MCDOS
-	!use cmatrix
 	complex(kind=8),private,parameter::Zero=(0.0,0.0),One=(1.0,0.0),Xi=(0.0,1.0)
-	real(kind=8),private,parameter::eps=0.001
+	real(8),private,parameter::eps=0.001
 	integer,private,parameter::nk=20
 	integer,private::initm=150
 	
-	type(hubbard_cluster_type),pointer,private::cluster
+	type(hubbard_cluster_type),pointer,private::cluster=>NULL()
 
 	contains
 

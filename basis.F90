@@ -7,10 +7,10 @@ module bas_mod
 	end type block_type
 	
 	type basis_type
-		integer,private::n_basis,n_orbit,n_block
-		integer,pointer,dimension(:),private::orbit
-		type(block_type),pointer,dimension(:),private::block
-		integer,pointer,dimension(:,:,:),private::c_bas
+		integer::n_basis,n_orbit,n_block
+		integer,pointer,dimension(:)::orbit
+		type(block_type),pointer,dimension(:)::block
+		integer,pointer,dimension(:,:,:)::c_bas
 	end type basis_type
 	
 	public::basis_init,basis_clean,basis_get_n_block,basis_get_n_orbit,basis_get_n_basis,basis_clone_basis,basis_clone_block
