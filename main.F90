@@ -13,8 +13,8 @@ program hubbard_cluster
 
 	integer::n,nsite,i,ne,elec,spin
 	real(8)::omega,density
-	real(kind=8),pointer,dimension(:)::e
-	real(kind=8),pointer,dimension(:,:)::X
+	real(8),pointer,dimension(:)::e
+	complex(8),pointer,dimension(:,:)::X
 
 	call timer_init()
 	cl=>cluster_init()
@@ -32,8 +32,8 @@ program hubbard_cluster
 
 !------------------ Cluster Eigenvalues and Eigenstates --------------------
 
-  ne=3        ! # of eigenstates you want to calculate
-  elec=4      ! # of electrons used in the calculation
+  ne=4        ! # of eigenstates you want to calculate
+  elec=1      ! # of electrons used in the calculation
   spin=0      ! # of spins used in the calcuation (# of spin up - # of spin down)
   n=cluster%nbas    ! don't change
 
@@ -41,15 +41,15 @@ program hubbard_cluster
   !call cluster_solver(cluster,ne,e,X)
 
   ! calculate eigens for specific # of electrons
-  !call cluster_solver_elec(cluster,elec,ne,e,X,n)
+  call cluster_solver_elec(cluster,elec,ne,e,X,n)
 
   ! calculate eigens for specific # of electrons and spins
-  call cluster_solver_elec_spin(cluster,elec,spin,ne,e,X,n)
+  !call cluster_solver_elec_spin(cluster,elec,spin,ne,e,X,n)
 
   ! print
   do i=1,ne
     write(*,*) i,e(i)
-    write(*,*) X(1:n,i)
+    !write(*,*) X(1:n,i)
   end do
 
 !----------------------------- VCA calculations ------------------------------
@@ -74,6 +74,9 @@ program hubbard_cluster
 
 	call hubbard_clean(cluster)
 	print *,cputime(),"seconds"
+
+
+  PAUSE
 end program hubbard_cluster
 
 

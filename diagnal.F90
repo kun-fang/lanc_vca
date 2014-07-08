@@ -50,9 +50,9 @@ module diagnal
 	subroutine diagnal_tridiag_real(n,d,e,Z)
 		implicit none
 		integer,intent(in)::n
-		real(kind=8),dimension(n),intent(inout)::d,e
-		real(kind=8),dimension(n,n),intent(inout),optional::Z
-		real(kind=8),pointer,dimension(:,:)::X
+		real(8),dimension(n),intent(inout)::d,e
+		real(8),dimension(n,n),intent(inout),optional::Z
+		real(8),pointer,dimension(:,:)::X
 		integer::ierr
 		if(present(Z)) then
 			call tql2(n,n,d,e,Z,ierr)

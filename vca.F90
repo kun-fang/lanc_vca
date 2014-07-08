@@ -2,7 +2,7 @@ module VCA
 	use hubbard_mod
 	use lehmann
 	use qnewton
-	complex(kind=8),private,parameter::Zero=(0.0,0.0),One=(1.0,0.0),Xi=(0.0,1.0)
+	complex(8),private,parameter::Zero=(0.0,0.0),One=(1.0,0.0),Xi=(0.0,1.0)
 	real(8),private,parameter::eps=0.001
 	integer,private,parameter::nk=20
 	integer,private::initm=150
@@ -69,7 +69,7 @@ module VCA
 	function VCA_potthoff_functional() result(x)
 		implicit none
 		type(Q_type),pointer::Q
-		real(kind=8)::omega,xup,xdn,x
+		real(8)::omega,xup,xdn,x
 		integer::orbit
 		if(.not.associated(cluster)) return
 		orbit=cluster%nsite
@@ -84,7 +84,7 @@ module VCA
 	function VCA_particle_density() result(density)
 		implicit none
 		type(Q_type),pointer::Q
-		real(kind=8)::density,omega,dup,ddn
+		real(8)::density,omega,dup,ddn
 		integer::orbit
 		if(.not.associated(cluster)) return
 		orbit=cluster_get_n_orbit(cluster)
@@ -97,9 +97,9 @@ module VCA
 	subroutine VCA_spectral_function()
 		implicit none
 		type(Q_type),pointer::Q,p
-		real(kind=8)::omega,x,kx,ky,w,Pi,dx,dy,leng,kp(2,4)
+		real(8)::omega,x,kx,ky,w,Pi,dx,dy,leng,kp(2,4)
 		integer::orbit,i,j,k
-		complex(kind=8),pointer,dimension(:,:)::G,gl
+		complex(8),pointer,dimension(:,:)::G,gl
 		if(.not.associated(cluster)) return
 		orbit=cluster_get_n_orbit(cluster)
 		allocate(G(orbit*2,orbit*2))
@@ -155,10 +155,10 @@ module VCA
 	subroutine VCA_DOS(Emin,Emax,bin)
 		implicit none
 		type(Q_type),pointer::Q,p,a
-		real(kind=8)::omega,kx,ky,Pi,w,Emin,Emax,dE
+		real(8)::omega,kx,ky,Pi,w,Emin,Emax,dE
 		integer,allocatable::S(:)
 		real(8),allocatable::E(:),sf(:)
-		complex(kind=8),pointer,dimension(:,:)::G,pg
+		complex(8),pointer,dimension(:,:)::G,pg
 		integer::orbit,i,j,k,bin,l
 		logical::OK
 		if(.not.associated(cluster)) return
@@ -212,11 +212,11 @@ module VCA
 	subroutine VCA_fermi_surface()
 		implicit none
 		type(Q_type),pointer::Q,p,a
-		real(kind=8)::omega,x,kx,ky,Pi
-		complex(kind=8)::gl
+		real(8)::omega,x,kx,ky,Pi
+		complex(8)::gl
 		integer::orbit,i,j
 		logical::OK
-		complex(kind=8),pointer,dimension(:,:)::G,pg
+		complex(8),pointer,dimension(:,:)::G,pg
 		if(.not.associated(cluster)) return
 		orbit=cluster_get_n_orbit(cluster)
 		allocate(G(orbit*2,orbit*2))

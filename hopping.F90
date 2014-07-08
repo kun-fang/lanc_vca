@@ -11,7 +11,7 @@ module hop_mod
 		integer,pointer,dimension(:,:)::cluster
 		real(8),pointer,dimension(:)::lt,ct
 		real(8)::lmu=0.d0,U=0.d0,Tep=0.d0,shift=0.d0
-		real(8)::cmu=0.d0,M=0.d0,delta=0.d0,D=0.d0,h=0.d0
+		real(8)::cmu=0.d0,M=0.d0,delta=0.d0,D=0.d0,h=0.d0,VSO=0.00
 		character(len=20)::SY=""
 	end type hop
 
@@ -39,7 +39,7 @@ module hop_mod
 	function cluster_distance(cl,i,j) result(r)
 		type(hop)::cl
 		integer::dim,i,j
-		real(kind=8)::r
+		real(8)::r
 		r=-1.0
 		if(i>cl%site.or.j>cl%site) return
 		dim=cl%dim
@@ -153,6 +153,8 @@ module hop_mod
 					read(8,*) rc,cl%delta
 				case("SP")
 					read(8,*) rc,cl%h
+        case("RS")
+          read(8,*) rc,cl%VSO
 				case default
 					cycle
 			end select
@@ -178,6 +180,7 @@ module hop_mod
 			tprime(i,i)=-cl%cmu
 			tprime(i+site,i+site)=-cl%cmu
 		end do
+
 		do k=1,cl%nct
 			i=cl%cluster(1,k)
 			j=cl%cluster(2,k)
@@ -186,7 +189,7 @@ module hop_mod
 			tprime(j,i)=conjg(tprime(i,j))
 			tprime(j+site,i+site)=tprime(j,i)
 		end do
-		
+
 		do i=1,19,2
 			rc=cl%SY(i:i+1)
 			if(rc=="") exit
@@ -200,6 +203,8 @@ module hop_mod
 					call cluster_NM(cl,3,4,tprime)
 				case("SP")
 					call cluster_SP(cl,tprime)
+        case("RS")
+          call cluster_RS(cl,tprime)
 				case default
 					cycle
 			end select
@@ -216,6 +221,39 @@ module hop_mod
 			do spin=1,2
 				tprime(i+site*(spin-1),i+site*(spin-1))=tprime(i+site*(spin-1),i+site*(spin-1))+cl%M*(-1)**(spin+i)
 			end do
+		end do
+	end subroutine
+
+	subroutine cluster_RS(cl,tprime)
+		implicit none
+		type(hop),pointer::cl
+		complex(8),pointer::tprime(:,:)
+		real(8)::a,PI,v(2)
+		integer::i,j,k,l,site
+		site=cl%site
+		do k=1,cl%nct
+			i=cl%cluster(1,k)
+			j=cl%cluster(2,k)
+			if(i>j) then
+				i=i+j
+				j=i-j
+				i=i-j
+			end if
+			v(1:2)=cl%coordinate(1:2,i)-cl%coordinate(1:2,j)
+			if(abs(v(1)-3)<1.d-5) v(1)=1.d0;
+      if(abs(v(1))<1.d-5.or.abs(v(2)-1)<1.d-5) then
+				l=abs(v(2))/v(2)
+        tprime(i,j+site)=tprime(i,j+site)+cl%VSO*Xi*l
+        tprime(i+site,j)=tprime(i+site,j)+cl%VSO*Xi*l
+				tprime(j+site,i)=conjg(tprime(i,j+site))
+				tprime(j,i+site)=conjg(tprime(i+site,j))
+      else if(abs(v(2))<1.d-5.or.abs(v(1)-1)<1.d-5) then
+				l=abs(v(1))/v(1)
+        tprime(i,j+site)=tprime(i,j+site)-cl%VSO*l
+        tprime(i+site,j)=tprime(i+site,j)+cl%VSO*l
+				tprime(j+site,i)=conjg(tprime(i,j+site))
+				tprime(j,i+site)=conjg(tprime(i+site,j))
+      end if
 		end do
 	end subroutine
 

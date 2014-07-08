@@ -1,19 +1,48 @@
+!--------------------------------------------------
+!
+! hubbard_cluster.F90
+! module: hubbard_mod
+! requirements: hop_mod, bas_mod, matrix_mod, underwood_mod
+!
+! created by Kun Fang
+!
+! This module contains definations and interface for Hubbard
+! model creations and calculations. The Hubbard model is 
+! represented by combination of basis, hopping matrix and 
+! its Hamiltonian. The subroutines for solving eigenvalues
+! and eigenvectors are also included.
+!
+! The module provides interfaces for extracting the whole 
+! matrix of the Hamiltonian or only a part of the Hamiltonian
+! for specific number of electrons and spins. The interfaces
+! of solving the Hamiltonian using Lanczos method is also
+! included. There is an option whether to calculate a given
+! number of eigenstates or a to find eigenstates within a
+! given energy range. It is default to choose the first choice.
+!
+! types:
+! hubbard_cluster_type
+!  |- hop
+!  |- basis_type
+!
+!------------------------------------------------------
+
 module hubbard_mod
 	use hop_mod
 	use bas_mod
 	use matrix_mod
-	use rand_mod
 	use underwood_mod
 	implicit none
 
+	! type for the Hubbard model
 	type hubbard_cluster_type
 		integer::nsite=0,nbas=0
 		type(hop),pointer::hop=>NULL()
 		type(basis_type),pointer::bas=>NULL()
 	end type hubbard_cluster_type
 
-	type(real_matrix),private,pointer::comm_matrix=>NULL()
-  logical,private,parameter::checkEnergy=.false.
+	type(complex_matrix),private,pointer::comm_matrix=>NULL()	! a temperary matrix for calculations
+  logical,public,parameter::checkEnergy=.false. ! option whether to calcuate within an energy range
 	real(8),private,parameter::ediff=3.5d0
   real(8),private,parameter::epsilon=1.d-5
 	
@@ -21,6 +50,9 @@ module hubbard_mod
 contains
 
 !-----------------hubbard cluster------------------------
+
+	! initialize the Hubbard model
+	! cl: 
 	function hubbard_init(cl,b) result(hc)
 		type(hubbard_cluster_type),pointer::hc
 		type(hop),pointer::cl
@@ -43,18 +75,18 @@ contains
 		type(hop),pointer::cl
 		type(basis_type),pointer::bas
     integer::si,sf
-		type(real_matrix),pointer::M
+		type(complex_matrix),pointer::M
 		integer::i,j,r,s,n,spin,spin2,site,k1,k2,alpha,beta,mr,ms
 		complex(8),pointer::t(:,:)
-		real(8)::x
+		complex(8)::x
 		n=sf-si+1
-		M=>real_matrix_init(n)
+		M=>complex_matrix_init(n)
 		site=cl%site
 		t=>cluster_update(cl)
 		do r=1,n
       mr=r+si-1
-			x=real_matrix_show(M,r,r)+basis_double_occupy(mr,bas)*cl%U*(-1)**(cl%nambu)
-			call real_matrix_set(M,r,r,x)
+			x=complex_matrix_show(M,r,r)+basis_double_occupy(mr,bas)*cl%U*(-1)**(cl%nambu)
+			call complex_matrix_set(M,r,r,x)
 			do spin=1,2
 				do alpha=1,site
 					i=basis_c(bas,alpha,spin,mr)
@@ -70,9 +102,9 @@ contains
 							ms=abs(ms)
               s=ms-si+1
 							if(r>=s) then
-								x=real_matrix_show(M,r,s)+k1*k2*t(alpha+(spin-1)*site,beta+(spin2-1)*site)
-								call real_matrix_set(M,r,s,x)
-								call real_matrix_set(M,s,r,x)
+								x=complex_matrix_show(M,r,s)+k1*k2*t(alpha+(spin-1)*site,beta+(spin2-1)*site)
+								call complex_matrix_set(M,r,s,x)
+								call complex_matrix_set(M,s,r,conjg(x))
 							end if
 						end do
 					end do
@@ -85,17 +117,17 @@ contains
 	function cluster_Hamiltonian(cl,bas) result(M)
 		type(hop),pointer::cl
 		type(basis_type),pointer::bas
-		type(real_matrix),pointer::M
+		type(complex_matrix),pointer::M
 		integer::i,j,r,s,n,spin,spin2,site,k1,k2,alpha,beta
 		complex(8),pointer::t(:,:)
-		real(8)::x
+		complex(8)::x
 		n=basis_get_n_basis(bas)
-		M=>real_matrix_init(n)
+		M=>complex_matrix_init(n)
 		site=cl%site
 		t=>cluster_update(cl)
 		do r=1,n
-			x=real_matrix_show(M,r,r)+basis_double_occupy(r,bas)*cl%U*(-1)**(cl%nambu)
-			call real_matrix_set(M,r,r,x)
+			x=complex_matrix_show(M,r,r)+basis_double_occupy(r,bas)*cl%U*(-1)**(cl%nambu)
+			call complex_matrix_set(M,r,r,x)
 			do spin=1,2
 				do alpha=1,site
 					i=basis_c(bas,alpha,spin,r)
@@ -110,9 +142,9 @@ contains
 							k2=s/abs(s)
 							s=abs(s)
 							if(r>=s) then
-								x=real_matrix_show(M,r,s)+k1*k2*t(alpha+(spin-1)*site,beta+(spin2-1)*site)
-								call real_matrix_set(M,r,s,x)
-								call real_matrix_set(M,s,r,x)
+								x=complex_matrix_show(M,r,s)+k1*k2*t(alpha+(spin-1)*site,beta+(spin2-1)*site)
+								call complex_matrix_set(M,r,s,x)
+								call complex_matrix_set(M,s,r,conjg(x))
 							end if
 						end do
 					end do
@@ -123,7 +155,7 @@ contains
 	end function
 
 	subroutine cluster_connect_matrix(M)
-		type(real_matrix),pointer::M
+		type(complex_matrix),pointer::M
 		comm_matrix=>M
 	end subroutine
 
@@ -134,8 +166,9 @@ contains
 	subroutine cluster_solver(cluster,m,D,X)
 		implicit none
 		type(hubbard_cluster_type),pointer,intent(in)::cluster
-		real(8),pointer::D(:),X(:,:)
-		type(real_matrix),pointer::H
+		real(8),pointer::D(:)
+		complex(8),pointer::X(:,:)
+		type(complex_matrix),pointer::H
 		integer::n,m,orbit,ne,IECODE,q,pinit,iter,i
 		
 		n=cluster%nbas
@@ -162,15 +195,16 @@ contains
 			m=m+20
 		end do
 		call cluster_disconnect_matrix()
-		call real_matrix_del(H)
+		call complex_matrix_del(H)
 	end subroutine
 
 	subroutine cluster_solver_elec(cluster,elec,m,D,X,dim)
 		implicit none
 		type(hubbard_cluster_type),pointer,intent(in)::cluster
-		real(8),pointer::D(:),X(:,:)
+		real(8),pointer::D(:)
+		complex(8),pointer::X(:,:)
     type(basis_type),pointer::bas
-		type(real_matrix),pointer::H
+		type(complex_matrix),pointer::H
 		integer::dim,elec,n,m,orbit,ne,IECODE,q,pinit,iter,i,si,sf
 		n=cluster%nbas
 		orbit=cluster%nsite
@@ -184,6 +218,7 @@ contains
       end if
     end do
 		H=>cluster_Hamiltonian_Partition(cluster%hop,cluster%bas,si,sf)
+		call complex_matrix_print(H)
 		call cluster_connect_matrix(H)
     n=H.dim
     dim=n
@@ -206,15 +241,16 @@ contains
 			m=m+20
 		end do
 		call cluster_disconnect_matrix()
-		call real_matrix_del(H)
+		call complex_matrix_del(H)
 	end subroutine
 
 	subroutine cluster_solver_elec_spin(cluster,elec,spin,m,D,X,dim)
 		implicit none
 		type(hubbard_cluster_type),pointer,intent(in)::cluster
-		real(8),pointer::D(:),X(:,:)
+		real(8),pointer::D(:)
+		complex(8),pointer::X(:,:)
     type(basis_type),pointer::bas
-		type(real_matrix),pointer::H
+		type(complex_matrix),pointer::H
 		integer::dim,elec,spin,n,m,orbit,ne,IECODE,q,pinit,iter,i,si,sf
 		n=cluster%nbas
 		orbit=cluster%nsite
@@ -249,13 +285,13 @@ contains
 			m=m+20
 		end do
 		call cluster_disconnect_matrix()
-		call real_matrix_del(H)
+		call complex_matrix_del(H)
 	end subroutine
 
 	subroutine OP(n,x,y)
 		integer::n
-		real(8)::x(n),y(n)
-		call real_matrix_product(comm_matrix,x,y)
+		complex(8)::x(n),y(n)
+		call complex_matrix_product(comm_matrix,x,y)
 	end subroutine
 
 	function cluster_get_n_orbit(cluster) result(n)

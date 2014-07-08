@@ -13,8 +13,8 @@ module rand_mod
 !-----------------------------public-----------------------------
 
 	function random_n(a,b) result(x)
-		real(kind=8),intent(in),optional::a,b
-		real(kind=8)::x
+		real(8),intent(in),optional::a,b
+		real(8)::x
 		if(.not.init) call init_seed()
 		call new_seed()
 		if(present(a).and.present(b)) then

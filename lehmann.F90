@@ -3,18 +3,18 @@ module lehmann
 	use diagnal
 	implicit none
 	
-	complex(kind=8),private,parameter::Zero=(0.0,0.0),One=(1.0,0.0),Xi=(0.0,1.0)
-	!real(kind=8),private,parameter::Pi=3.1415926
+	complex(8),private,parameter::Zero=(0.0,0.0),One=(1.0,0.0),Xi=(0.0,1.0)
+	!real(8),private,parameter::Pi=3.1415926
 	integer,private,parameter::nk=10
 	
 	type Q_type
-		real(kind=8)::w
-		complex(kind=8),pointer,dimension(:)::q
+		real(8)::w
+		complex(8),pointer,dimension(:)::q
 		type(Q_type),pointer::next
 	end type Q_type
 	
-	real(kind=8),pointer,dimension(:),private::Z,e
-	real(kind=8),pointer,dimension(:,:),private::X
+	real(8),pointer,dimension(:),private::Z,e
+	complex(8),pointer,dimension(:,:),private::X
 	integer,private::ne
 	public::lehmann_init,lehmann_Q_clean,lehmann_potthoff_functional,lehmann_green_function,hop_cluster,hop_lattice
 
@@ -27,11 +27,11 @@ module lehmann
 	function lehmann_init(cluster,omega,ne) result(Q)
 		implicit none
 		type(hubbard_cluster_type),pointer,intent(in)::cluster
-		real(kind=8),intent(out)::omega
+		real(8),intent(out)::omega
 		type(Q_type),pointer::Q
 		integer::i,j,k,ne
 		complex(8)::sum
-		real(kind=8)::Tep
+		real(8)::Tep
 		Tep=cluster%hop%Tep
 		call cluster_solver(cluster,ne,e,X)
 		Z=>partition(ne,e,Tep,omega)
@@ -60,11 +60,11 @@ module lehmann
 	function lehmann_restore(cluster,G,kx,ky) result(x)
 		implicit none
 		type(hubbard_cluster_type),pointer,intent(in)::cluster
-		complex(kind=8),pointer,dimension(:,:),intent(in)::G
-		real(kind=8),intent(in)::kx,ky
-		complex(kind=8)::x,q,p,e
+		complex(8),pointer,dimension(:,:),intent(in)::G
+		real(8),intent(in)::kx,ky
+		complex(8)::x,q,p,e
 		integer::i,j,k,n,dim,orbit,ii,jj
-		real(kind=8),allocatable,dimension(:,:)::coor
+		real(8),allocatable,dimension(:,:)::coor
 		dim=2
 		orbit=cluster%nsite
 		allocate(coor(dim,orbit))
@@ -93,12 +93,12 @@ module lehmann
 	function lehmann_periodization(cluster,G,kx,ky) result(pg)
 		implicit none
 		type(hubbard_cluster_type),pointer,intent(in)::cluster
-		complex(kind=8),pointer,dimension(:,:),intent(in)::G
-		complex(kind=8),pointer::pg(:,:)
-		real(kind=8),intent(in)::kx,ky
-		complex(kind=8)::x,q,p,e
+		complex(8),pointer,dimension(:,:),intent(in)::G
+		complex(8),pointer::pg(:,:)
+		real(8),intent(in)::kx,ky
+		complex(8)::x,q,p,e
 		integer::i,j,k,n,dim,orbit,ii,jj
-		real(kind=8),allocatable,dimension(:,:)::coor
+		real(8),allocatable,dimension(:,:)::coor
 		dim=2
 		orbit=cluster%nsite
 		allocate(pg(2,2))
@@ -127,7 +127,7 @@ module lehmann
 		implicit none
 		type(hubbard_cluster_type),pointer,intent(in)::cluster
 		type(Q_type),pointer,intent(in)::Q
-		real(kind=8)::kx,ky,sum,Tep,x,w,Pi
+		real(8)::kx,ky,sum,Tep,x,w,Pi
 		type(Q_type),pointer::p,a
 		integer::i,j,k
 		x=0.0
@@ -163,9 +163,9 @@ module lehmann
 		implicit none
 		type(hubbard_cluster_type),pointer,intent(in)::cluster
 		type(Q_type),pointer,intent(in)::Q
-		real(kind=8),intent(in)::time
+		real(8),intent(in)::time
 		integer::alpha,xt,yt
-		real(kind=8)::kx,ky,sum,Tep,w,Pi
+		real(8)::kx,ky,sum,Tep,w,Pi
 		complex(8)::s,g,x
 		type(Q_type),pointer::p,a
 		integer::i,j,k
@@ -206,11 +206,11 @@ module lehmann
 		implicit none
 		type(hubbard_cluster_type),pointer,intent(in)::cluster
 		type(Q_type),pointer,intent(in)::Q
-		real(kind=8)::func,kx,ky,sum,o1,o2,Tep,Pi
+		real(8)::func,kx,ky,sum,o1,o2,Tep,Pi
 		integer::i,j,k,nw,orbit,ii,jj
-		real(kind=8),pointer,dimension(:)::wprime,w
-		real(kind=8),pointer,dimension(:,:)::MS
-		complex(kind=8),pointer,dimension(:,:)::t,V,M,tprime
+		real(8),pointer,dimension(:)::wprime,w
+		real(8),pointer,dimension(:,:)::MS
+		complex(8),pointer,dimension(:,:)::t,V,M,tprime
 		if(.not.associated(Q).or..not.associated(cluster)) return
 		Tep=cluster%hop%Tep
 		orbit=cluster%nsite
@@ -254,11 +254,11 @@ module lehmann
 		implicit none
 		type(hubbard_cluster_type),pointer,intent(in)::cluster
 		type(Q_type),pointer,intent(inout)::Q
-		real(kind=8),intent(in)::kx,ky
-		real(kind=8),pointer,dimension(:)::w,wprime
-		complex(kind=8),pointer,dimension(:,:)::t,V,M,tprime,tran
-		real(kind=8),pointer,dimension(:,:)::MS
-		complex(kind=8)::z
+		real(8),intent(in)::kx,ky
+		real(8),pointer,dimension(:)::w,wprime
+		complex(8),pointer,dimension(:,:)::t,V,M,tprime,tran
+		real(8),pointer,dimension(:,:)::MS
+		complex(8)::z
 		type(Q_type),pointer::a
 		integer::i,j,k,nw,orbit
 		orbit=cluster%nsite
@@ -309,7 +309,7 @@ module lehmann
 		implicit none
 		type(Q_type),pointer,intent(in)::Q
 		type(Q_type),pointer::p,a,b,node
-		complex(kind=8),pointer,dimension(:)::y
+		complex(8),pointer,dimension(:)::y
 		integer::n
 		nullify(p)
 		if(.not.associated(Q))return
@@ -333,13 +333,13 @@ module lehmann
 
 	subroutine lehmann_green_function(w,orbit,Q,G)
 		implicit none
-		complex(kind=8),intent(in)::w
+		complex(8),intent(in)::w
 		integer,intent(in)::orbit
 		type(Q_type),pointer,intent(in)::Q
-		complex(kind=8),dimension(:,:)::G
+		complex(8),dimension(:,:)::G
 		type(Q_type),pointer::a,b
-		complex(kind=8),pointer,dimension(:)::x,y
-		complex(kind=8)::sum,z
+		complex(8),pointer,dimension(:)::x,y
+		complex(8)::sum,z
 		integer::i,j,k,alpha,beta,n
 		i=0
 		j=0
@@ -364,15 +364,14 @@ module lehmann
 	function Q_Matrix(cluster,ne,Tep) result(Q)
 		implicit none
 		type(hubbard_cluster_type),pointer,intent(in)::cluster
-		real(kind=8),intent(in)::Tep
+		real(8),intent(in)::Tep
 		type(Q_type),pointer::Q
 		type(basis_type),pointer::bas
 		type(Q_type),pointer::node,d
-		real(kind=8),pointer,dimension(:)::a,b
-		complex(kind=8),pointer,dimension(:)::test,test2
-		real(kind=8),pointer,dimension(:,:)::c
+		complex(8),pointer,dimension(:)::a,b,test,test2
+		complex(8),pointer,dimension(:,:)::c
 		integer::i,j,k,n,m,orbit,plus,alpha,spin,ne
-		real(kind=8)::sum,w,apt
+		real(8)::sum,w,apt
 		bas=>cluster%bas
 		n=basis_get_n_basis(bas)
 		orbit=basis_get_n_orbit(bas)
@@ -423,8 +422,8 @@ module lehmann
 
 	function newnode(w,q) result(node)
 		implicit none
-		real(kind=8)::w
-		complex(kind=8),pointer,dimension(:)::q
+		real(8)::w
+		complex(8),pointer,dimension(:)::q
 		type(Q_type),pointer::node
 		allocate(node)
 		node%w=w
@@ -435,10 +434,10 @@ module lehmann
 	function partition(n,e,T,omega) result(Z)
 		implicit none
 		integer,intent(in)::n
-		real(kind=8),intent(in)::T
-		real(kind=8),intent(out)::omega
-		real(kind=8),pointer,dimension(:),intent(in)::e
-		real(kind=8),pointer,dimension(:)::Z
+		real(8),intent(in)::T
+		real(8),intent(out)::omega
+		real(8),pointer,dimension(:),intent(in)::e
+		real(8),pointer,dimension(:)::Z
 		integer::i,j,k
 		real*8::sum,w0
 		allocate(Z(n))
@@ -475,9 +474,9 @@ module lehmann
 	function Trln(n,w,Tep) result(sum)
 		implicit none
 		integer,intent(in)::n
-		real(kind=8),pointer,dimension(:),intent(in)::w
-		real(kind=8),intent(in)::Tep
-		real(kind=8)::sum
+		real(8),pointer,dimension(:),intent(in)::w
+		real(8),intent(in)::Tep
+		real(8)::sum
 		integer::i
 		sum=0.0
 		do i=1,n
@@ -508,13 +507,13 @@ module lehmann
 	function get_M(Q,V,n,orbit,w) result(M)
 		implicit none
 		type(Q_type),pointer,intent(in)::Q
-		complex(kind=8),pointer,dimension(:,:),intent(in)::V
+		complex(8),pointer,dimension(:,:),intent(in)::V
 		integer,intent(in)::n,orbit
-		real(kind=8),pointer,dimension(:),intent(in)::w
-		complex(kind=8),pointer,dimension(:,:)::M
+		real(8),pointer,dimension(:),intent(in)::w
+		complex(8),pointer,dimension(:,:)::M
 		type(Q_type),pointer::a,b
 		integer::i,j,alpha,beta
-		complex(kind=8)::sum
+		complex(8)::sum
 		allocate(M(n,n))
 		a=>Q
 		do i=1,n
@@ -539,7 +538,7 @@ module lehmann
 		implicit none
 		type(Q_type),pointer,intent(in)::Q
 		integer,intent(out)::n
-		real(kind=8),pointer,dimension(:),intent(out)::w
+		real(8),pointer,dimension(:),intent(out)::w
 		type(Q_type),pointer::a
 		integer::i
 		a=>Q
@@ -563,8 +562,8 @@ module lehmann
 	subroutine c_cplus(alpha,spin,x,y,bas,plus)
 		implicit none
 		integer,intent(in)::alpha,spin,plus
-		real(kind=8),pointer,dimension(:),intent(in)::x
-		real(kind=8),pointer,dimension(:),intent(out)::y
+		complex(8),pointer,dimension(:),intent(in)::x
+		complex(8),pointer,dimension(:),intent(out)::y
 		type(basis_type),pointer::bas
 		integer::n,i,j,k
 		n=basis_get_n_basis(bas)
