@@ -229,7 +229,7 @@ module hop_mod
     complex(8),pointer::m(:,:)
     integer::n,s1,s2,i,j
     do i=1+s1*n,n+s1*n
-      do j=1+s2*n,i-1+s2*n
+      do j=1+s2*n,i-1-s1*n+s2*n
         if(abs(m(i,j))>1.d-5) print *,i-s1*n,j-s2*n,real(m(i,j)),imag(m(i,j))
       end do
     end do
@@ -262,13 +262,14 @@ module hop_mod
         tprime(j,i+site)=conjg(tprime(i+site,j))
       else if(abs(v(2))<1.d-5.or.abs(v(1)-1)<1.d-5) then
         l=abs(v(1))/v(1)
-        tprime(i,j+site)=tprime(i,j+site)+cl%VSO*l
+        tprime(i,j+site)=tprime(i,j+site)-cl%VSO*l
         tprime(i+site,j)=tprime(i+site,j)+cl%VSO*l
         tprime(j+site,i)=conjg(tprime(i,j+site))
         tprime(j,i+site)=conjg(tprime(i+site,j))
       end if
     end do
     call print_matrix(tprime,site,0,1)
+    call print_matrix(tprime,site,1,0)
   end subroutine
 
   subroutine cluster_SC(cl,tprime)
