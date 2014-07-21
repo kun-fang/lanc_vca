@@ -1,7 +1,7 @@
 module underwood_mod
 
-	integer,private,parameter::INMAX=1000000
-	real(8),private,save::ERRC
+  integer,private,parameter::INMAX=1000000
+  real(8),private,save::ERRC
 contains
 
 !*****************************************************************
@@ -27,22 +27,22 @@ contains
 !
 !
 !
-	SUBROUTINE MINVAL(N,Q,PINIT,R,MMAX,EPS,OP,M,D,X,IECODE)
+  SUBROUTINE MINVAL(N,Q,PINIT,R,MMAX,EPS,OP,M,D,X,IECODE)
 !=================================================================
 !     this subroutine is the main subroutine implementing the
 !     iterative block lanczos method for computing the
 !     eigenvalues and eigenvectors of symmetric matrices.
 !=================================================================
-		IMPLICIT NONE
-		INTEGER N , Q , PINIT , R , MMAX , M,I,J
-		REAL(8) EPS
-		EXTERNAL OP
-		REAL(8) D(Q)
+    IMPLICIT NONE
+    INTEGER N , Q , PINIT , R , MMAX , M,I,J
+    REAL(8) EPS
+    EXTERNAL OP
+    REAL(8) D(Q)
     COMPLEX(8) X(N,Q) , C(Q,Q),TEST
-		INTEGER IECODE
-		REAL(8) E(Q)
-		COMPLEX(8) U(INMAX) , V(INMAX)
-		INTEGER P , S , PS , K , ITER , IMM , NCONV
+    INTEGER IECODE
+    REAL(8) E(Q)
+    COMPLEX(8) U(INMAX) , V(INMAX)
+    INTEGER P , S , PS , K , ITER , IMM , NCONV
 !
 !------
 !     description of parameters:
@@ -156,25 +156,25 @@ contains
 !     check that the initial values of the subroutine parameters
 !     are in range.
 !------
-		IF ( N<2 ) THEN
-			IECODE = 1
-			RETURN
-		ELSEIF ( N>INMAX ) THEN
-			IECODE = 2
-			RETURN
-		ELSEIF ( R<1 ) THEN
-			IECODE = 3
-			RETURN
-		ELSEIF ( Q<=R ) THEN
-			IECODE = 4
-			RETURN
-!		ELSEIF ( Q>25 ) THEN
-!			IECODE = 5
-!			RETURN
-		ELSEIF ( Q>N ) THEN
-			IECODE = 6
-			RETURN
-		ELSE
+    IF ( N<2 ) THEN
+      IECODE = 1
+      RETURN
+    ELSEIF ( N>INMAX ) THEN
+      IECODE = 2
+      RETURN
+    ELSEIF ( R<1 ) THEN
+      IECODE = 3
+      RETURN
+    ELSEIF ( Q<=R ) THEN
+      IECODE = 4
+      RETURN
+!   ELSEIF ( Q>25 ) THEN
+!     IECODE = 5
+!     RETURN
+    ELSEIF ( Q>N ) THEN
+      IECODE = 6
+      RETURN
+    ELSE
 !
 !------
 !     choose initial values for the block size P, the number of
@@ -182,32 +182,32 @@ contains
 !     choose an initial N-by-P orthonormal matrix X1 used to start
 !     the block lanczos method.
 !------
-			P = PINIT
+      P = PINIT
       C(1:Q,1:Q) = (0.D0,0.D0)
-			IF ( P<0 ) P = -P
-			S = (Q-M)/P
-			IF ( S<=2 ) THEN
-				S = 2
-				P = (Q-M)/2
-			ENDIF
-			IF ( PINIT>=0 ) THEN
-				DO K = M+1 , M+P
-					CALL RANDOM(N,Q,K,X)
-				ENDDO
-			ENDIF
-			IF ( M<=0 ) THEN
-				CALL ORTHG(N,Q,M,P,C,X)
+      IF ( P<0 ) P = -P
+      S = (Q-M)/P
+      IF ( S<=2 ) THEN
+        S = 2
+        P = (Q-M)/2
+      ENDIF
+      IF ( PINIT>=0 ) THEN
+        DO K = M+1 , M+P
+          CALL RANDOM(N,Q,K,X)
+        ENDDO
+      ENDIF
+      IF ( M<=0 ) THEN
+        CALL ORTHG(N,Q,M,P,C,X)
 !
 !------
 !     rotate the initial N-by-P matrix X1 so that
 !        X1'*A*X1=diag(D1,D2,...,DP)
 !     where DI is stored in D(I), I=1,...,P.
 !------
-				CALL SECTN(N,Q,M,P,OP,X,C,D,U,V)
-				ERRC = 0.D0
-			ENDIF
-			ITER = 0
-			IMM = 0
+        CALL SECTN(N,Q,M,P,OP,X,C,D,U,V)
+        ERRC = 0.D0
+      ENDIF
+      ITER = 0
+      IMM = 0
 !
 !------
 !     the main body of the subroutine starts here. IMM
@@ -217,20 +217,20 @@ contains
 !     the eigenvalues and eigenvectors.
 !------
 !
-20		IF ( M>=R ) THEN
+20    IF ( M>=R ) THEN
 !
 !------
 !     this is the end of the main body of the subroutine. Now set
 !     the value of IECODE and EXIT.
 !------
-				IECODE = 0
-				RETURN
-			ELSEIF ( IMM>MMAX ) THEN
-				IECODE = 7
-				PINIT = -P
-			ELSE
-				ITER = ITER + 1
-				PS = P*S
+        IECODE = 0
+        RETURN
+      ELSEIF ( IMM>MMAX ) THEN
+        IECODE = 7
+        PINIT = -P
+      ELSE
+        ITER = ITER + 1
+        PS = P*S
 !
 !------
 !     BKLANC carries out the block lanczos method and stores
@@ -241,14 +241,14 @@ contains
 !     and the eigenvalue approximations in D are computed and
 !     stored in E.
 !------
-				CALL BKLANC(N,Q,M,P,S,OP,D,C,X,E,U,V)
+        CALL BKLANC(N,Q,M,P,S,OP,D,C,X,E,U,V)
 !
 !------
 !     EIGEN solves the eigenproblem for MS, storing the eigenvalues
 !     in elements M+1 through M+PS of D and the eigenvectors in the
 !     first P*S rows and columns of C (overwriting MS, possibly).
 !------
-				CALL EIGEN(Q,M,P,PS,C,D)
+        CALL EIGEN(Q,M,P,PS,C,D)
 !
 !------
 !     CNVTST determines how many of the eigenvalues and eigenvectors
@@ -256,13 +256,13 @@ contains
 !     that have converged is stored in NCONV. If NCONV=0, then none
 !     have converged.
 !------
-				CALL CNVTST(N,Q,M,P,EPS,D,E,NCONV)
+        CALL CNVTST(N,Q,M,P,EPS,D,E,NCONV)
 !
 !------
 !     PCH chooses new values for P and S, the block size and the
 !     number of steps for the block lanczos subprogram, respectively.
 !------
-				CALL PCH(N,Q,M,R,NCONV,P,S)
+        CALL PCH(N,Q,M,R,NCONV,P,S)
 !
 !------
 !     ROTATE computes the eigenvectors of the restricted matrix
@@ -271,21 +271,21 @@ contains
 !     to form the matrix used to start the block lanczos method in
 !     the next iteration.
 !------
-				CALL ROTATE(N,Q,M,PS,NCONV+P,C,X)
+        CALL ROTATE(N,Q,M,PS,NCONV+P,C,X)
 !
-				M = M + NCONV
-				IMM = IMM + P*S
-				!WRITE (*,"(' =>ITER,IMM,P,PS =',4I5)") ITER , IMM , P , PS
-				GOTO 20
-			ENDIF
-		ENDIF
+        M = M + NCONV
+        IMM = IMM + P*S
+        !WRITE (*,"(' =>ITER,IMM,P,PS =',4I5)") ITER , IMM , P , PS
+        GOTO 20
+      ENDIF
+    ENDIF
 !
-	END SUBROUTINE
-!
-!
+  END SUBROUTINE
 !
 !
-	SUBROUTINE BKLANC(N,Q,M,P,S,OP,D,C,X,E,U,V)
+!
+!
+  SUBROUTINE BKLANC(N,Q,M,P,S,OP,D,C,X,E,U,V)
 !====================================================================
 !     this subroutine implements the block lanczos method
 !     with reorthogonalization. BKLANC computes a block
@@ -310,71 +310,71 @@ contains
 !     and ||*|| denotes the Euclidean norm. EJ is stored in E(M+J),
 !     J=1,2,...,P. U and V are auxilliary vectors used by OP.
 !====================================================================
-		IMPLICIT NONE
-		INTEGER N,Q,M,P,S
-		EXTERNAL OP
-		REAL(8) D(Q)
-		REAL(8) E(Q)
-		COMPLEX(8) C(Q,Q),X(N,Q),U(N),V(N)
-		COMPLEX(8) T
-		INTEGER MP1,MPPS,L,LL,LU,K,I,J,IT,KP1,IL,ii
+    IMPLICIT NONE
+    INTEGER N,Q,M,P,S
+    EXTERNAL OP
+    REAL(8) D(Q)
+    REAL(8) E(Q)
+    COMPLEX(8) C(Q,Q),X(N,Q),U(N),V(N)
+    COMPLEX(8) T
+    INTEGER MP1,MPPS,L,LL,LU,K,I,J,IT,KP1,IL,ii
 !
-		MP1 = M+1
-		MPPS = M+P*S
-		DO L = 1 , S
-			LL = M + (L-1)*P + 1
-			LU = M + L*P
-			DO K = LL , LU
-			U(1:N) = X(1:N,K)
-				CALL OP(N,U,V)
-				IF ( L>1 ) THEN
-					DO I = K , LU
-						T = 0
-						DO J = 1 , N
-							T = T + V(J)*CONJG(X(J,I))
-						ENDDO
-						C(I,K) = T
-					ENDDO
-					IT = K - P
-					DO I = 1 , N
-						T = 0
-						DO J = IT , K
-							T = T + X(I,J)*CONJG(C(K,J))
-						ENDDO
-						IF ( K==LU ) THEN
-							V(I) = V(I) - T
-						ELSE
-						  KP1 = K + 1
-						  DO J = KP1 , LU
-							  T = T + X(I,J)*C(J,K)
-						  ENDDO
-						ENDIF
-					ENDDO
-				ELSE
-					C(K:LU,K) = 0.D0
-					C(K,K) = D(K)
-					V = V - D(K)*X(1:N,K)
-				ENDIF
-				IF ( L==S ) CYCLE
-				X(1:N,K+P) = V(1:N)
-			ENDDO
-			IF ( L==1 ) CALL ERR(N,Q,M,P,X,E)
-			IF ( L==S ) CYCLE
-			CALL ORTHG(N,Q,LU,P,C,X)
-			IL = LU + 1
-			IT = LU
-			DO J = 1 , P
-			  IT = IT + 1
-			  C(IL:IT,IT-P) = C(IL:IT,IT)
-			ENDDO
-		ENDDO
+    MP1 = M+1
+    MPPS = M+P*S
+    DO L = 1 , S
+      LL = M + (L-1)*P + 1
+      LU = M + L*P
+      DO K = LL , LU
+      U(1:N) = X(1:N,K)
+        CALL OP(N,U,V)
+        IF ( L>1 ) THEN
+          DO I = K , LU
+            T = 0
+            DO J = 1 , N
+              T = T + V(J)*CONJG(X(J,I))
+            ENDDO
+            C(I,K) = T
+          ENDDO
+          IT = K - P
+          DO I = 1 , N
+            T = 0
+            DO J = IT , K
+              T = T + X(I,J)*CONJG(C(K,J))
+            ENDDO
+            IF ( K==LU ) THEN
+              V(I) = V(I) - T
+            ELSE
+              KP1 = K + 1
+              DO J = KP1 , LU
+                T = T + X(I,J)*C(J,K)
+              ENDDO
+            ENDIF
+          ENDDO
+        ELSE
+          C(K:LU,K) = 0.D0
+          C(K,K) = D(K)
+          V = V - D(K)*X(1:N,K)
+        ENDIF
+        IF ( L==S ) CYCLE
+        X(1:N,K+P) = V(1:N)
+      ENDDO
+      IF ( L==1 ) CALL ERR(N,Q,M,P,X,E)
+      IF ( L==S ) CYCLE
+      CALL ORTHG(N,Q,LU,P,C,X)
+      IL = LU + 1
+      IT = LU
+      DO J = 1 , P
+        IT = IT + 1
+        C(IL:IT,IT-P) = C(IL:IT,IT)
+      ENDDO
+    ENDDO
 !
-	END SUBROUTINE
-!
-!
+  END SUBROUTINE
 !
 !
-	SUBROUTINE PCH(N,Q,M,R,NCONV,P,S)
+!
+!
+  SUBROUTINE PCH(N,Q,M,R,NCONV,P,S)
 !====================================================================
 !     based on the values of N, Q, M, R and NCONV, PCH chooses new
 !     values for P and S, the block size and number of steps for the
@@ -391,62 +391,62 @@ contains
 !     Finally, NCONV is the number of eigenvalues and eigenvectors
 !     that have converged in the current iteration.
 !====================================================================
-		IMPLICIT NONE
-		INTEGER N , Q , M , R , NCONV , P , S
-		INTEGER PT , ST , MT
-		!
-		MT = M + NCONV
-		PT = R - MT
-		IF ( PT>P ) PT = P
-		IF ( PT>0 ) THEN
-			ST = (Q-MT)/PT
-		ELSE
-		  P = 0
-		  RETURN
-		ENDIF
-		!
-		IF ( ST>2 ) THEN
-		  P = PT
-		  S = ST
-		ELSE
-			ST = 2
-			PT = (Q-MT)/2
-			P = PT
-			S = ST
-		ENDIF
+    IMPLICIT NONE
+    INTEGER N , Q , M , R , NCONV , P , S
+    INTEGER PT , ST , MT
+    !
+    MT = M + NCONV
+    PT = R - MT
+    IF ( PT>P ) PT = P
+    IF ( PT>0 ) THEN
+      ST = (Q-MT)/PT
+    ELSE
+      P = 0
+      RETURN
+    ENDIF
+    !
+    IF ( ST>2 ) THEN
+      P = PT
+      S = ST
+    ELSE
+      ST = 2
+      PT = (Q-MT)/2
+      P = PT
+      S = ST
+    ENDIF
 !
-	END SUBROUTINE
-!
-!
+  END SUBROUTINE
 !
 !
-	SUBROUTINE ERR(N,Q,M,P,X,E)
+!
+!
+  SUBROUTINE ERR(N,Q,M,P,X,E)
 !================================================
 !     ERR COMPUTES THE EUCLIDEAN LENGTHS OF THE
 !     VECTORS STORED IN THE COLUMNS M+P+1 THROUGH
 !     M+P+P OF THE N-BY-Q ARRAY X AND STORES THEM
 !     IN ELEMENTS M+1 THROUGH M+P OF E.
 !================================================
-		IMPLICIT NONE
+    IMPLICIT NONE
 !
-		INTEGER N , Q , M , P
-		REAL(8) E(Q) , T , DSQRT
-		COMPLEX(8) X(N,Q)
-		INTEGER MP1 , MPP , K , I
+    INTEGER N , Q , M , P
+    REAL(8) E(Q) , T , DSQRT
+    COMPLEX(8) X(N,Q)
+    INTEGER MP1 , MPP , K , I
 !
-		MP1 = M + P + 1
-		MPP = M + P + P
-		DO K = MP1 , MPP
-			T = ABS(DOT_PRODUCT(X(1:N,K),X(1:N,K)))
-			E(K-P) = DSQRT(T)
-		ENDDO
+    MP1 = M + P + 1
+    MPP = M + P + P
+    DO K = MP1 , MPP
+      T = ABS(DOT_PRODUCT(X(1:N,K),X(1:N,K)))
+      E(K-P) = DSQRT(T)
+    ENDDO
 !
-	END SUBROUTINE
-!
-!
+  END SUBROUTINE
 !
 !
-	SUBROUTINE CNVTST(N,Q,M,P,EPS,D,E,NCONV)
+!
+!
+  SUBROUTINE CNVTST(N,Q,M,P,EPS,D,E,NCONV)
 !===========================================================
 !     CNVTST determines which of the P eigenvalues stored
 !     in elements M+1 through M+P of D have converged. ERRC
@@ -459,32 +459,32 @@ contains
 !     number that have converged. If NCONV=0, then none have
 !     converged.
 !============================================================
-		IMPLICIT NONE
-		INTEGER N , Q , M , P
-		REAL(8) EPS
-		REAL(8) D(Q) , E(Q)
-		REAL(8) T , DSQRT
-		INTEGER NCONV , K , I
-		REAL(8) , PARAMETER :: CHEPS = 2.22D-16
+    IMPLICIT NONE
+    INTEGER N , Q , M , P
+    REAL(8) EPS
+    REAL(8) D(Q) , E(Q)
+    REAL(8) T , DSQRT
+    INTEGER NCONV , K , I
+    REAL(8) , PARAMETER :: CHEPS = 2.22D-16
 !
-		K = 0
-		DO I = 1 , P
-			T = DABS(D(M+I))
-			IF ( T<1.D0 ) T = 1.D0
-			IF ( E(M+I)>T*(EPS+10.D0*N*CHEPS)+ERRC ) EXIT
-			K = I
-		ENDDO
-		NCONV = K
-		IF ( K==0 ) RETURN
-		T = ABS(DOT_PRODUCT(E(M+1:M+K),E(M+1:M+K)))
-		ERRC = DSQRT(ERRC**2+T)
+    K = 0
+    DO I = 1 , P
+      T = DABS(D(M+I))
+      IF ( T<1.D0 ) T = 1.D0
+      IF ( E(M+I)>T*(EPS+10.D0*N*CHEPS)+ERRC ) EXIT
+      K = I
+    ENDDO
+    NCONV = K
+    IF ( K==0 ) RETURN
+    T = ABS(DOT_PRODUCT(E(M+1:M+K),E(M+1:M+K)))
+    ERRC = DSQRT(ERRC**2+T)
 !
-	END SUBROUTINE
-!
-!
+  END SUBROUTINE
 !
 !
-	SUBROUTINE EIGEN(Q,M,P,PS,A,D)
+!
+!
+  SUBROUTINE EIGEN(Q,M,P,PS,A,D)
 !=======================================================
 !     EIGEN solves the eigenproblem for the symmetric
 !     matrix MS of order PS stored in rows and columns
@@ -496,53 +496,53 @@ contains
 !     subroutines TRED2 and TQL2. These two routines are
 !     available through eispack.
 !=======================================================
-		IMPLICIT NONE
-		INTEGER M , P , Q , PS , PP1
-		COMPLEX(8) A(Q,Q)
-		REAL(8) C(Q,Q) , D(Q) , CR(Q,Q) , CI(Q,Q)
-		REAL(8) DD(Q) , V(Q) , D2(Q), S
-		INTEGER I , LIM , LM1 , J , IERR
+    IMPLICIT NONE
+    INTEGER M , P , Q , PS , PP1
+    COMPLEX(8) A(Q,Q)
+    REAL(8) C(Q,Q) , D(Q) , CR(Q,Q) , CI(Q,Q)
+    REAL(8) DD(Q) , V(Q) , D2(Q), S
+    INTEGER I , LIM , LM1 , J , IERR
 !
-		DO I = 1 , PS
-			LIM = I - P
-			IF ( I<=P ) LIM = 1
-			IF ( LIM>1 ) THEN
-				LM1 = LIM - 1
-				DO J = 1 , LM1
-					C(I,J) = 0.D0
+    DO I = 1 , PS
+      LIM = I - P
+      IF ( I<=P ) LIM = 1
+      IF ( LIM>1 ) THEN
+        LM1 = LIM - 1
+        DO J = 1 , LM1
+          C(I,J) = 0.D0
           C(J,I) = 0.D0
-				ENDDO
-			ENDIF
-			DO J = LIM , I
-				C(I,J) = REAL(A(I+M,J+M))
+        ENDDO
+      ENDIF
+      DO J = LIM , I
+        C(I,J) = REAL(A(I+M,J+M))
         IF(I/=J) C(J,I) = IMAG(A(I+M,J+M))
-			ENDDO
-		ENDDO
+      ENDDO
+    ENDDO
 !
 !------
 !     CALL EISPACK ROUTINES HERE
 !------
 !
-		CALL DIAGM(Q,PS,C,DD,CR,CI,IERR)
+    CALL DIAGM(Q,PS,C,DD,CR,CI,IERR)
 !
-		!WRITE (*,"(' => ORDER =',I4,/,('    EIGENVALUES =',10D10.4))") PS , (DD(I),I=1,PS)
-		!PP1 = P + 1
-		!DO J = 1 , PP1
-			!WRITE (*,"(' => J =',I4,/,('    EIGENVECTORS =',10D10.4))") J , (C(I,J),I=1,PS)
-		!ENDDO
+    !WRITE (*,"(' => ORDER =',I4,/,('    EIGENVALUES =',10D10.4))") PS , (DD(I),I=1,PS)
+    !PP1 = P + 1
+    !DO J = 1 , PP1
+      !WRITE (*,"(' => J =',I4,/,('    EIGENVECTORS =',10D10.4))") J , (C(I,J),I=1,PS)
+    !ENDDO
     
-		A(1:PS,1:PS)=CR(1:PS,1:PS)+(0.D0,1.D0)*CI(1:PS,1:PS)
+    A(1:PS,1:PS)=CR(1:PS,1:PS)+(0.D0,1.D0)*CI(1:PS,1:PS)
 
-		DO I = 1 , PS
-			D(M+I) = DD(I)
-		ENDDO
+    DO I = 1 , PS
+      D(M+I) = DD(I)
+    ENDDO
 !
-	END SUBROUTINE
-!
-!
+  END SUBROUTINE
 !
 !
-	SUBROUTINE SECTN(N,Q,M,P,OP,X,C,D,U,V)
+!
+!
+  SUBROUTINE SECTN(N,Q,M,P,OP,X,C,D,U,V)
 !==============================================================
 !     SECTN transforms the N-by-P orthonormal matrix X1,
 !     say, stored in columns M+1 through M+P of the N-by-Q
@@ -555,37 +555,37 @@ contains
 !     are computed by EIGEN and stored in D and C respectively.
 !     ROTATE then carries out the transformation X1<=X1*QP.
 !==============================================================
-		IMPLICIT NONE
-		INTEGER N , Q , M , P
-		EXTERNAL OP
-		REAL(8) D(Q)
-		COMPLEX(8) U(N) , V(N) , X(N,Q) , C(Q,Q) , T 
-		INTEGER ICOL1 , ICOL2 , I , J , K
+    IMPLICIT NONE
+    INTEGER N , Q , M , P
+    EXTERNAL OP
+    REAL(8) D(Q)
+    COMPLEX(8) U(N) , V(N) , X(N,Q) , C(Q,Q) , T 
+    INTEGER ICOL1 , ICOL2 , I , J , K
 !
-		ICOL1 = M
-		DO J = 1 , P
-			ICOL1 = ICOL1 + 1
-			U(1:N) = X(1:N,ICOL1)
-			CALL OP(N,U,V)
-			ICOL2 = M
-			DO I = 1 , J
-				ICOL2 = ICOL2 + 1
-				T = 0.D0
-				DO K = 1 , N
-					T = T + CONJG(V(K))*X(K,ICOL2)
-				ENDDO
-				C(ICOL1,ICOL2) = T
-			ENDDO
-		ENDDO
-		CALL EIGEN(Q,M,P,P,C,D)
-		CALL ROTATE(N,Q,M,P,P,C,X)
+    ICOL1 = M
+    DO J = 1 , P
+      ICOL1 = ICOL1 + 1
+      U(1:N) = X(1:N,ICOL1)
+      CALL OP(N,U,V)
+      ICOL2 = M
+      DO I = 1 , J
+        ICOL2 = ICOL2 + 1
+        T = 0.D0
+        DO K = 1 , N
+          T = T + CONJG(V(K))*X(K,ICOL2)
+        ENDDO
+        C(ICOL1,ICOL2) = T
+      ENDDO
+    ENDDO
+    CALL EIGEN(Q,M,P,P,C,D)
+    CALL ROTATE(N,Q,M,P,P,C,X)
 
-	END SUBROUTINE
+  END SUBROUTINE
 !
 !
 !
 !
-	SUBROUTINE ROTATE(N,Q,M,PS,L,C,X)
+  SUBROUTINE ROTATE(N,Q,M,PS,L,C,X)
 !======================================================
 !     ROTATE computes the first L columns of the matrix
 !     XS*QS where XS is an N-by-PS orthonormal matrix 
@@ -595,30 +595,30 @@ contains
 !     array C. The result is stored in columns M+1
 !     through M+L of X overwriting part of XS.
 !======================================================
-		IMPLICIT NONE
-		INTEGER N , Q , M , PS , L
-		COMPLEX(8) C(Q,Q) , X(N,Q) , V(Q) , T
-		INTEGER I , J , K
+    IMPLICIT NONE
+    INTEGER N , Q , M , PS , L
+    COMPLEX(8) C(Q,Q) , X(N,Q) , V(Q) , T
+    INTEGER I , J , K
 !
-		DO I = 1 , N
-			DO K = 1 , L
-				T = 0.D0
-				DO J = 1 , PS
-					T = T + X(I,M+J)*C(J,K)
-				ENDDO
-				V(K) = T
-			ENDDO
-			DO K = 1 , L
-				X(I,M+K) = V(K)
-			ENDDO
-		ENDDO
+    DO I = 1 , N
+      DO K = 1 , L
+        T = 0.D0
+        DO J = 1 , PS
+          T = T + X(I,M+J)*C(J,K)
+        ENDDO
+        V(K) = T
+      ENDDO
+      DO K = 1 , L
+        X(I,M+K) = V(K)
+      ENDDO
+    ENDDO
 !
-	END SUBROUTINE
-!
-!
+  END SUBROUTINE
 !
 !
-	SUBROUTINE ORTHG(N,Q,F,P,B,X)
+!
+!
+  SUBROUTINE ORTHG(N,Q,F,P,B,X)
 !=========================================================
 !     ORTHG reorthogonalizes the N-by-P matrix Z stored
 !     in columns F+1 through F+P of the N-by-Q array X
@@ -632,51 +632,51 @@ contains
 !     of the Gram-Schmidt orthogonalization method is
 !     utilised.
 !=========================================================
-		IMPLICIT NONE
-		INTEGER N , Q , F , P
-		REAL(8) T , DSQRT , SS, ORT(F+P,F+P)
-		COMPLEX(8) S, QQ
-		COMPLEX(8) B(Q,Q) , X(N,Q)
-		INTEGER FP1 , FPP , K , KM1 , I , J
-		LOGICAL ORIG
+    IMPLICIT NONE
+    INTEGER N , Q , F , P
+    REAL(8) T , DSQRT , SS, ORT(F+P,F+P)
+    COMPLEX(8) S, QQ
+    COMPLEX(8) B(Q,Q) , X(N,Q)
+    INTEGER FP1 , FPP , K , KM1 , I , J
+    LOGICAL ORIG
 !
-		IF ( P==0 ) RETURN
-		FP1 = F + 1
-		FPP = F + P
-		DO K = FP1 , FPP
-			ORIG = .TRUE.
-			KM1 = K - 1
-50		T = 0.D0
-			IF ( KM1>=1 ) THEN
-				DO I = 1 , KM1
-					S = DOT_PRODUCT(X(1:N,I),X(1:N,K))
-					IF ( ORIG .AND. I>F ) B(I,K) = S
-					T = T + ABS(S)
-					X(1:N,K) = X(1:N,K) - S*X(1:N,I)
-				ENDDO
-			ENDIF
-			S = DOT_PRODUCT(X(1:N,K),X(1:N,K))
-			T = T + ABS(S)
-			IF ( ABS(S)>T/10.D0 ) THEN
-				SS = SQRT(ABS(S))
-				B(K,K) = SS
-				IF ( SS/=0 ) SS = 1.D0/SS
-				DO J = 1 , N
-					X(J,K) = SS*X(J,K)
-				ENDDO
-			ELSE
-				ORIG = .FALSE.
-				GOTO 50
-			ENDIF
-		ENDDO
+    IF ( P==0 ) RETURN
+    FP1 = F + 1
+    FPP = F + P
+    DO K = FP1 , FPP
+      ORIG = .TRUE.
+      KM1 = K - 1
+50    T = 0.D0
+      IF ( KM1>=1 ) THEN
+        DO I = 1 , KM1
+          S = DOT_PRODUCT(X(1:N,I),X(1:N,K))
+          IF ( ORIG .AND. I>F ) B(I,K) = S
+          T = T + ABS(S)
+          X(1:N,K) = X(1:N,K) - S*X(1:N,I)
+        ENDDO
+      ENDIF
+      S = DOT_PRODUCT(X(1:N,K),X(1:N,K))
+      T = T + ABS(S)
+      IF ( ABS(S)>T/10.D0 ) THEN
+        SS = SQRT(ABS(S))
+        B(K,K) = SS
+        IF ( SS/=0 ) SS = 1.D0/SS
+        DO J = 1 , N
+          X(J,K) = SS*X(J,K)
+        ENDDO
+      ELSE
+        ORIG = .FALSE.
+        GOTO 50
+      ENDIF
+    ENDDO
 
-	END SUBROUTINE
+  END SUBROUTINE
 !
 !
 !
 !
-	SUBROUTINE RANDOM(N,Q,L,X)
-		use rand_mod
+  SUBROUTINE RANDOM(N,Q,L,X)
+    use rand_mod
 !======================================================
 !     RANDOM computes and stores a sequence of N
 !     pseudo-random numbers in the L-th column of the
@@ -685,20 +685,20 @@ contains
 !     sequence and using the second to access the array 
 !     in a random fashion.
 !======================================================
-		IMPLICIT NONE
-		INTEGER N , Q , L
-		INTEGER I
-		COMPLEX(8) X(N,Q)
-		REAL(8) RR , RI
+    IMPLICIT NONE
+    INTEGER N , Q , L
+    INTEGER I
+    COMPLEX(8) X(N,Q)
+    REAL(8) RR , RI
 !
-		DO I = 1 , N
-			RI = random_n(0.D0,1.D0)
-			RR = random_n(0.D0,1.D0)
-			X(I,L) = RR + (0.D0,1.D0)*RI
-		ENDDO
+    DO I = 1 , N
+      RI = random_n(0.D0,1.D0)
+      RR = random_n(0.D0,1.D0)
+      X(I,L) = RR + (0.D0,1.D0)*RI
+    ENDDO
 !
 !
-	END SUBROUTINE
+  END SUBROUTINE
 !
 !
 !
@@ -742,7 +742,7 @@ contains
 !--->    REDUCE THE STANDARD PROBLEM TO REAL TRIDIAGONAL FORM
       CALL TREDC(NM,N,H,E,E1,E2,TAU)
 !--->    FIND EIGENVALUES AND EIGENVECTORS OF REAL TRIADIAGONAL MATRIX
-			ZI=0.D0
+      ZI=0.D0
       DO I=1,N
          DO J=1,N
             ZR(J,I)=0.0D0

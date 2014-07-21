@@ -1,39 +1,39 @@
 program hubbard_cluster
-	use hubbard_mod
-	use rand_mod
-	use timer_mod
-	use VCA
+  use hubbard_mod
+  use rand_mod
+  use timer_mod
+  use VCA
 
-	implicit none
+  implicit none
 
-	type(basis_type),pointer::bas
-	type(hop),pointer::cl
-	type(hubbard_cluster_type),pointer::cluster
-	type(Q_type),pointer::Q
+  type(basis_type),pointer::bas
+  type(hop),pointer::cl
+  type(hubbard_cluster_type),pointer::cluster
+  type(Q_type),pointer::Q
 
-	integer::n,nsite,i,ne,elec,spin
-	real(8)::omega,density
-	real(8),pointer,dimension(:)::e
-	complex(8),pointer,dimension(:,:)::X
+  integer::n,nsite,i,ne,elec,spin
+  real(8)::omega,density
+  real(8),pointer,dimension(:)::e
+  complex(8),pointer,dimension(:,:)::X
 
-	call timer_init()
-	cl=>cluster_init()
+  call timer_init()
+  cl=>cluster_init()
   nsite=cl%site
-	bas=>basis_init(nsite)
-	cluster=>hubbard_init(cl,bas)
+  bas=>basis_init(nsite)
+  cluster=>hubbard_init(cl,bas)
 
-	write(*,*)"----------------------------------------------------------------"
-	write(*,*)"VCA calculation: initial parameters are"
-	write(*,*)"U=",cluster%hop%U,"mu=",cluster%hop%lmu
-	write(*,*)"t=",cluster%hop%lt
-	write(*,*)"Cluster t=",cluster%hop%ct
-	write(*,*)"Cluster mu=",cluster%hop%cmu
-	write(*,*)"----------------------------------------------------------------"
+  write(*,*)"----------------------------------------------------------------"
+  write(*,*)"VCA calculation: initial parameters are"
+  write(*,*)"U=",cluster%hop%U,"mu=",cluster%hop%lmu
+  write(*,*)"t=",cluster%hop%lt
+  write(*,*)"Cluster t=",cluster%hop%ct
+  write(*,*)"Cluster mu=",cluster%hop%cmu
+  write(*,*)"----------------------------------------------------------------"
 
 !------------------ Cluster Eigenvalues and Eigenstates --------------------
 
-  ne=4        ! # of eigenstates you want to calculate
-  elec=1      ! # of electrons used in the calculation
+  ne=10        ! # of eigenstates you want to calculate
+  elec=4      ! # of electrons used in the calculation
   spin=0      ! # of spins used in the calcuation (# of spin up - # of spin down)
   n=cluster%nbas    ! don't change
 
@@ -58,22 +58,22 @@ program hubbard_cluster
 !
 !-----------------------------------------------------------------------------
 
-!	if(VCA_connect_cluster(cluster)) then       ! connect cluster to VCA solver
+! if(VCA_connect_cluster(cluster)) then       ! connect cluster to VCA solver
 
-!		print *,VCA_potthoff_functional()         ! VCA energy at given parameters
-!		print *,VCA_particle_density()            ! electron density at given parameters
-!	  call VCA_spectral_function()              ! spectral function at given parameters
-!		call VCA_DOS(-3.d0,3.d0,40)               ! DOS at given parameters
-!		call VCA_fermi_surface()                  ! fermi surface at given parameters
-!		if(VCA_optimal(omega)) print *,cluster%hop%cmu,cluster%hop%ct,omega
+!   print *,VCA_potthoff_functional()         ! VCA energy at given parameters
+!   print *,VCA_particle_density()            ! electron density at given parameters
+!   call VCA_spectral_function()              ! spectral function at given parameters
+!   call VCA_DOS(-3.d0,3.d0,40)               ! DOS at given parameters
+!   call VCA_fermi_surface()                  ! fermi surface at given parameters
+!   if(VCA_optimal(omega)) print *,cluster%hop%cmu,cluster%hop%ct,omega
                                               ! VCA optimization for the initial parameters
 
-!		call VCA_disconnect_cluster()             ! disconnect cluster from VCA solver
-!	end if
+!   call VCA_disconnect_cluster()             ! disconnect cluster from VCA solver
+! end if
 
 
-	call hubbard_clean(cluster)
-	print *,cputime(),"seconds"
+  call hubbard_clean(cluster)
+  print *,cputime(),"seconds"
 
 
   PAUSE

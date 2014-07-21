@@ -37,73 +37,73 @@
 
 module diagnal
 
-	private
-	
-	public::diagnal_exact_real,diagm,diagnal_exact_complex,diagnal_tridiag_real
-	
-	private::rebakc,reducc,tql2,trbakc,tredc,ranff
-	
-	contains
+  private
+  
+  public::diagnal_exact_real,diagm,diagnal_exact_complex,diagnal_tridiag_real
+  
+  private::rebakc,reducc,tql2,trbakc,tredc,ranff
+  
+  contains
 !--------------------------public-------------------------------
 
-	subroutine diagnal_exact_real(n,H,e,X)
-		integer::n,i,j
-		real(8),pointer::H(:,:),e(:),zi(:,:),zr(:,:)
-		real(8),pointer,optional::X(:,:)
-		allocate(zi(n,n))
-		allocate(zr(n,n))
-		call diagm(n,n,H,H,e,Zr,Zi)
-		if(present(X)) then
-			do i=1,n
-				do j=1,n
-					X(j,i)=zr(j,i)
-				end do
-			end do
-		end if
-		deallocate(zi)
-		deallocate(zr)
-	end subroutine
-	
-	
-	subroutine diagnal_exact_complex(n,H,e,X)
-		implicit none
-		integer::n,i,j
-		real(8),pointer::H(:,:),e(:),zi(:,:),zr(:,:)
-		complex(8),pointer,optional::X(:,:)
-		allocate(zi(n,n))
-		allocate(zr(n,n))
-		call diagm(n,n,H,H,e,Zr,Zi)
-		if(present(X)) then
-			do i=1,n
-				do j=1,n
-					X(j,i)=zr(j,i)+(0.0,1.0)*zi(j,i)
-				end do
-			end do
-		end if
-		deallocate(zi)
-		deallocate(zr)
-	end subroutine
-	
-	subroutine diagnal_tridiag_real(n,d,e,Z)
-		implicit none
-		integer,intent(in)::n
-		real(8),dimension(n),intent(inout)::d,e
-		real(8),dimension(n,n),intent(inout),optional::Z
-		real(8),pointer,dimension(:,:)::X
-		integer::ierr
-		if(present(Z)) then
-			call tql2(n,n,d,e,Z,ierr)
-		else
-			allocate(X(n,n))
-			call tql2(n,n,d,e,X,ierr)
-			deallocate(X)
-		end if
-		if(ierr/=0) stop 'tql2'
-	end subroutine
-	
-	
+  subroutine diagnal_exact_real(n,H,e,X)
+    integer::n,i,j
+    real(8),pointer::H(:,:),e(:),zi(:,:),zr(:,:)
+    real(8),pointer,optional::X(:,:)
+    allocate(zi(n,n))
+    allocate(zr(n,n))
+    call diagm(n,n,H,H,e,Zr,Zi)
+    if(present(X)) then
+      do i=1,n
+        do j=1,n
+          X(j,i)=zr(j,i)
+        end do
+      end do
+    end if
+    deallocate(zi)
+    deallocate(zr)
+  end subroutine
+  
+  
+  subroutine diagnal_exact_complex(n,H,e,X)
+    implicit none
+    integer::n,i,j
+    real(8),pointer::H(:,:),e(:),zi(:,:),zr(:,:)
+    complex(8),pointer,optional::X(:,:)
+    allocate(zi(n,n))
+    allocate(zr(n,n))
+    call diagm(n,n,H,H,e,Zr,Zi)
+    if(present(X)) then
+      do i=1,n
+        do j=1,n
+          X(j,i)=zr(j,i)+(0.0,1.0)*zi(j,i)
+        end do
+      end do
+    end if
+    deallocate(zi)
+    deallocate(zr)
+  end subroutine
+  
+  subroutine diagnal_tridiag_real(n,d,e,Z)
+    implicit none
+    integer,intent(in)::n
+    real(8),dimension(n),intent(inout)::d,e
+    real(8),dimension(n,n),intent(inout),optional::Z
+    real(8),pointer,dimension(:,:)::X
+    integer::ierr
+    if(present(Z)) then
+      call tql2(n,n,d,e,Z,ierr)
+    else
+      allocate(X(n,n))
+      call tql2(n,n,d,e,X,ierr)
+      deallocate(X)
+    end if
+    if(ierr/=0) stop 'tql2'
+  end subroutine
+  
+  
 !--------------------------private------------------------------
-	
+  
       SUBROUTINE DIAGM(NM,N,H,S,E,ZR,ZI)
 !**********************************************************************
 !
@@ -723,5 +723,5 @@ module diagnal
       END FUNCTION
 
 end module diagnal
-	
-	
+  
+  
