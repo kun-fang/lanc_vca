@@ -1,3 +1,40 @@
+!--------------------------------------------------
+!
+! basis.F90
+! module: bas_mod
+! requirements: noe
+!
+! created by Kun Fang
+!
+! This module contains definations and interface for the basis
+! of a cluster model. This module is designed to easily 
+! implement the basis for the Hubbard model. It can also be
+! used for implementation of the t-J model, but some code
+! should be added to avoid double occupancy.
+!
+! A basis is impelemented as all the possible
+! spin configurations in the cluster. Whether a cluster site is
+! occupied is represented by 1 (occupied) or 0 (emtpy). The
+! sites with spin up and spin down are represented separatedly,
+! so the cluster with 4 sites has a basis implemented by a
+! 8-digit binary number. For example, a 2x2 cluster with a spin
+! configuration (up, down, empty, down) is represented as 133
+! (10000101). The first 4 binary digits are up spin sites and
+! the last 4 digits are down spin sites.
+!
+! The module provides interfaces for the basis creation and
+! its calculations. For example, creation and annihilation 
+! operations
+!
+!
+! types:
+! block_type
+!
+! basis_type
+!  |- block_type
+!
+!------------------------------------------------------
+
 module diagnal
 
 	private

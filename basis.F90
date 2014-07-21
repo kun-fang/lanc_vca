@@ -1,16 +1,62 @@
+!--------------------------------------------------
+!
+! basis.F90
+! module: bas_mod
+! requirements: noe
+!
+! created by Kun Fang
+!
+! This module contains definations and interface for the basis
+! of a cluster model. This module is designed to easily 
+! implement the basis for the Hubbard model. It can also be
+! used for implementation of the t-J model, but some code
+! should be added to avoid double occupancy.
+!
+! A basis is impelemented as all the possible
+! spin configurations in the cluster. Whether a cluster site is
+! occupied is represented by 1 (occupied) or 0 (emtpy). The
+! sites with spin up and spin down are represented separatedly,
+! so the cluster with 4 sites has a basis implemented by a
+! 8-digit binary number. For example, a 2x2 cluster with a spin
+! configuration (up, down, empty, down) is represented as 133
+! (10000101). The first 4 binary digits are up spin sites and
+! the last 4 digits are down spin sites.
+!
+! The module provides interfaces for the basis creation and
+! its calculations. For example, creation and annihilation 
+! operations
+!
+!
+! types:
+! block_type
+!
+! basis_type
+!  |- block_type
+!
+!------------------------------------------------------
+
 module bas_mod
 	implicit none
 
-	!define block_type
+	! define block_type
+    ! this type include information about the basis: 
+    ! it divide the basis into different blocks so that
+    ! basis in the same block have the same number of 
+    ! electrons and spins. This block can be used later
+    ! to divide Hamiltonian into partitions.
 	type block_type
-		integer::init,fin,elec,spin
+		integer::init,fin,elec,spin ! init: block initial index. fin: block final index.
+                                    ! elec: number of electrons. spin number of spins.
 	end type block_type
 	
+    ! basis_type
+    ! 
 	type basis_type
-		integer::n_basis,n_orbit,n_block
-		integer,pointer,dimension(:)::orbit
-		type(block_type),pointer,dimension(:)::block
-		integer,pointer,dimension(:,:,:)::c_bas
+		integer::n_basis,n_orbit,n_block    ! n_basis: number of basis. n_orbit: number of site. n_block: number of blocks
+		integer,pointer,dimension(:)::orbit ! orbit: binary representations of the basis
+		type(block_type),pointer,dimension(:)::block    ! block: all the blocks 
+		integer,pointer,dimension(:,:,:)::c_bas ! c_bas: creation and annihilation matrix. it recodes all the matrix elements
+                                                ! <i|c|j> where |i> is the i-th basis
 	end type basis_type
 	
 	public::basis_init,basis_clean,basis_get_n_block,basis_get_n_orbit,basis_get_n_basis,basis_clone_basis,basis_clone_block
@@ -23,6 +69,12 @@ module bas_mod
 !---------------------public------------------------
 
 	!initial the basis
+    !
+    ! input:
+    ! i_site - integer: number of sites in the cluster
+    !
+    ! output:
+    ! b - type(basis_type): the collection of the basis
 	function basis_init(i_site) result(b)
 		implicit none
 		integer,intent(in)::i_site
@@ -107,6 +159,7 @@ module bas_mod
 		
 	end function
 	
+    ! delete the basis from memory
 	subroutine basis_clean(b)
 		implicit none
 		type(basis_type),pointer,intent(inout)::b
@@ -118,8 +171,10 @@ module bas_mod
 		nullify(b)
 	end subroutine
 
-	!get number of basis blocks
-	!result: n = number of basis blocks
+	! get number of basis blocks
+    !
+	! output: 
+    ! n - integer : number of basis blocks
 	function basis_get_n_block(b) result(n)
 		implicit none
 		type(basis_type),pointer,intent(in)::b
@@ -276,7 +331,7 @@ module bas_mod
 		end if
 	end function
 	
-	!find # of electrons in n state
+	!find out # of electrons of the n-th basis
 	!result: elec = # of electron
 	function basis_elec(n,p,a,b,s) result(elec)
 		implicit none
@@ -299,8 +354,8 @@ module bas_mod
 		end if
 	end function
 
-	!find spin of n state
-	!result: elec = spin*2
+	!find out # of spin of the n-th basis
+	!result: spin = # of spin up - # of spin down
 	function basis_spin(n,p) result(spin)
 		implicit none
 		integer,intent(in)::n
@@ -314,6 +369,7 @@ module bas_mod
 		end if
 	end function
 
+    !find out # of double occupancy for the n-the basis
 	function basis_double_occupy(n,p) result(d)
 		implicit none
 		integer,intent(in)::n
@@ -330,7 +386,7 @@ module bas_mod
 !---------------------private-----------------------
 
 
-	!create a fermion at alpha-orbital with s-spin of n-state
+	!create a fermion at site alpha with s-spin in n-th basis
 	!result: new = -1 (error) or new state
 	function creation(alpha,s,bas,n_orbit) result(new)
 		implicit none
@@ -348,7 +404,7 @@ module bas_mod
 		end if
 	end function
 	
-	!annihilate a fermion at alpha-orbital with s-spin of n-state
+	!annihilate a fermion at site alpha with s-spin in n-th basis
 	!result: new = -1 (error) or new state
 	function annihilation(alpha,s,bas,n_orbit) result(new)
 		implicit none
@@ -367,7 +423,7 @@ module bas_mod
 	end function
 
 	
-	!find out occupation number in alpha-orbital with s-spin of n-state
+	!find out occupation number of site alpha with s-spin in n-th basis
 	!result: r = 1 (occupied) or 0 (empty)
 	function occupation(alpha,s,bas,n_orbit) result(r)
 		implicit none
@@ -382,6 +438,7 @@ module bas_mod
 	end function
 
 
+	!find out # of double occupation for a basis
 	function dou_occupy(bas,n_orbit) result(n)
 		implicit none
 		integer,intent(in)::bas,n_orbit
@@ -392,7 +449,7 @@ module bas_mod
 		n=num_elec(iand(a,b),n_orbit)
 	end function
 
-	!find out number of fermions in n-state
+	!find out number of fermions in n-th basis
 	!result: n_elec = number of fermions
 	function num_elec(bas,n_orbit,a,b) result(n_elec)
 		implicit none
@@ -421,7 +478,7 @@ module bas_mod
 		n_elec=l
 	end function
 	
-	!find out spin of n-state
+	!find out spin of n-th basis
 	!result: n_spin = spin * 2
 	function num_spin(bas,n_orbit) result(n_spin)
 		implicit none

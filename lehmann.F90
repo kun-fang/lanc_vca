@@ -4,7 +4,6 @@ module lehmann
 	implicit none
 	
 	complex(8),private,parameter::Zero=(0.0,0.0),One=(1.0,0.0),Xi=(0.0,1.0)
-	!real(8),private,parameter::Pi=3.1415926
 	integer,private,parameter::nk=10
 	
 	type Q_type
