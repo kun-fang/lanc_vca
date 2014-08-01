@@ -2,7 +2,7 @@
 !
 ! basis.F90
 ! module: bas_mod
-! requirements: noe
+! requirements: none
 !
 ! created by Kun Fang
 !
@@ -172,9 +172,9 @@ module bas_mod
   end subroutine
 
   ! get number of basis blocks
-    !
+  !
   ! output: 
-    ! n - integer : number of basis blocks
+  ! n - integer : number of basis blocks
   function basis_get_n_block(b) result(n)
     implicit none
     type(basis_type),pointer,intent(in)::b

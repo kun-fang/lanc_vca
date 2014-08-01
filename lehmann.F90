@@ -1,3 +1,42 @@
+!--------------------------------------------------
+!
+! lehmann.F90
+! module: lehmann
+! requirements: hubbard_mod, diagnal
+!
+! created by Kun Fang
+!
+! This is the core module for VCA calculations. It includes 
+! some important subroutines that will cooperate to extract 
+! VCA-based grand potential of a reference system. It is 
+! suggested not to use these subroutines dirrectly, because
+! you need several subroutines together to make the program
+! work, and there are some special data structures which are 
+! not good for mathematical calculations. The file vca.F90 
+! includes many interfaces for some specific calculations 
+! such as energy, DOS, spectral function, so it is better 
+! always use subroutines in vca.F90.
+!
+! The module is designed according to the calculation process 
+! in a published paper: PRB 74, 235117 (2006). If you need to 
+! know more about why the subroutines are designed like this, 
+! please refer to this paper
+! 
+! In this module, the green's function of the clusters are 
+! calculated using Lehmann representation, and then the 
+! Potthoff functional is evaluated based on the green's
+! function. The process also involve a lot of other
+! subroutines to convert between clusters and lattices. 
+! Here also provides some important interfaces for further
+! VCA calculations.
+!
+!
+! types:
+! Q_type
+!  |- Q_type
+!
+!------------------------------------------------------
+
 module lehmann
   use hubbard_mod
   use diagnal

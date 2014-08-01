@@ -305,6 +305,7 @@ contains
     call cluster_connect_matrix(H)
     n=H.dim
     dim=n
+    print *,"dimension:",n
     do
       ne=0
       q=m*5

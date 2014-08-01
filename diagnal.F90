@@ -1,37 +1,23 @@
 !--------------------------------------------------
 !
 ! basis.F90
-! module: bas_mod
-! requirements: noe
+! module: diagnal
+! requirements: none
 !
 ! created by Kun Fang
 !
-! This module contains definations and interface for the basis
-! of a cluster model. This module is designed to easily 
-! implement the basis for the Hubbard model. It can also be
-! used for implementation of the t-J model, but some code
-! should be added to avoid double occupancy.
+! This module contains interfaces for solving eigenvalues and 
+! eigenvectors of a real symmetric matrix, a complex symmetric
+! matrix and a real tridiagonal matrix by exact diagonalization
+! method.
 !
-! A basis is impelemented as all the possible
-! spin configurations in the cluster. Whether a cluster site is
-! occupied is represented by 1 (occupied) or 0 (emtpy). The
-! sites with spin up and spin down are represented separatedly,
-! so the cluster with 4 sites has a basis implemented by a
-! 8-digit binary number. For example, a 2x2 cluster with a spin
-! configuration (up, down, empty, down) is represented as 133
-! (10000101). The first 4 binary digits are up spin sites and
-! the last 4 digits are down spin sites.
+! NOTE: only work for square matrices
 !
-! The module provides interfaces for the basis creation and
-! its calculations. For example, creation and annihilation 
-! operations
+! The core programs are actually the double precise EISPACK
+! package which include a set of standard subroutines to solve
+! some linear algebra problems. Some of them are also included
+! in the underwood.F90 file.
 !
-!
-! types:
-! block_type
-!
-! basis_type
-!  |- block_type
 !
 !------------------------------------------------------
 
@@ -46,6 +32,23 @@ module diagnal
   contains
 !--------------------------public-------------------------------
 
+  ! diagonalization of a real matrix
+  ! 
+  ! input:
+  ! n - integer: number of dimension of the matrix
+  ! H - real(8): a pointer to a nxn matrix that represents the symmetric
+  !              matrix to be solved, which defined as follow with (I>=J)
+  !                      H(I,J) = H(I,J)
+  !                      H(J,I) = 0
+  ! e - real(8): a pointer to an allocated vector with length n
+  ! X - real(8): a pointer to an allocated nxn matrix
+  !
+  ! output:
+  ! e - real(8): a pointer to an allocated vector with length n containing
+  !              all the eigenvalues
+  ! X - real(8): a pointer to an allocated nxn matrix with all the eigenvectors
+  !              stored in columns.
+  !
   subroutine diagnal_exact_real(n,H,e,X)
     integer::n,i,j
     real(8),pointer::H(:,:),e(:),zi(:,:),zr(:,:)
@@ -65,6 +68,23 @@ module diagnal
   end subroutine
   
   
+  ! diagonalization of a complex matrix
+  ! 
+  ! input:
+  ! n - integer: number of dimension of the matrix
+  ! H - real(8): a pointer to a nxn matrix that represents the symmetric
+  !              matrix to be solved, which defined as follow with (I>=J)
+  !                      H(I,J) = REAL( H(I,J) )
+  !                      H(J,I) = IMAG( H(I,J) )
+  ! e - real(8): a pointer to an allocated vector with length n
+  ! X - real(8): a pointer to an allocated nxn matrix
+  !
+  ! output:
+  ! e - real(8): a pointer to an allocated vector with length n containing
+  !              all the eigenvalues
+  ! X - complex(8): a pointer to an allocated nxn matrix with all the eigenvectors
+  !              stored in columns.
+  !
   subroutine diagnal_exact_complex(n,H,e,X)
     implicit none
     integer::n,i,j
@@ -84,6 +104,22 @@ module diagnal
     deallocate(zr)
   end subroutine
   
+  ! diagonalization of a real tridiagonal matrix
+  ! 
+  ! input:
+  ! n - integer: number of dimension of the matrix
+  ! d - real(8): a pointer to an allocated vector with length n containing
+  !              all the diagonal elements in the vector
+  ! e - real(8): a pointer to an allocated vector with length n containing
+  !              all the subdiagonal elements in the vector
+  ! X - real(8): a pointer to an allocated nxn matrix
+  !
+  ! output:
+  ! e - real(8): a pointer to an allocated vector with length n containing
+  !              all the eigenvalues
+  ! X - real(8): a pointer to an allocated nxn matrix with all the eigenvectors
+  !              stored in columns.
+  !
   subroutine diagnal_tridiag_real(n,d,e,Z)
     implicit none
     integer,intent(in)::n

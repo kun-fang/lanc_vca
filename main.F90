@@ -47,9 +47,9 @@ program hubbard_cluster
   !call cluster_solver_elec_spin(cluster,elec,spin,ne,e,X,n)
 
   ! print
-  do i=1,ne
-    write(*,*) i,e(i)
-    !write(*,*) X(1:n,i)
+  write(*,*) 1,e(1)
+  do i=2,ne
+    write(*,*) i,e(i),e(i)-e(i-1)
   end do
 
 !----------------------------- VCA calculations ------------------------------

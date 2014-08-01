@@ -1,51 +1,58 @@
+!--------------------------------------------------
+!
+! hopping.F90
+! module: hop_mod
+! requirements: none
+!
+! created by Kun Fang
+!
+! This module implements a cluster. It provides some interfaces
+! for a cluster object including the coordinates and hoppings
+! of a cluster.
+!
+! A cluster is implemented as a set of sites in real space and 
+! hopping relation between these sites. The object also includes
+! translation vectors that represent the vectors needed to tile
+! the clusters to form an infinite lattice.
+!
+! The information of a cluster is imported from a cluster 
+! configuration file and an input file. The cluster configuration
+! file includes its name, the coordinates of all the sites and
+! the translation vectors. The input file include the hopping 
+! relation between cluster sites for both the lattice and the 
+! cluster. 
+! 
+!
+!
+! types:
+! hop
+!
+!------------------------------------------------------
+
 module hop_mod
   implicit none
   
   complex(8),private,parameter::Zero=(0.0,0.0),Xi=(0.0,1.0)
-
+  
+  ! the type represents a cluster
   type,public::hop
-    integer::site,dim,nlt,nct,nambu=0,scty=0
-    real,pointer,dimension(:,:)::coordinate
-    real,pointer,dimension(:,:)::vector
-    integer,pointer,dimension(:,:)::lattice
-    integer,pointer,dimension(:,:)::cluster
-    real(8),pointer,dimension(:)::lt,ct
-    real(8)::lmu=0.d0,U=0.d0,Tep=0.d0,shift=0.d0
-    real(8)::cmu=0.d0,M=0.d0,delta=0.d0,D=0.d0,h=0.d0,VSO=0.00
-    character(len=20)::SY=""
+    integer::site,dim,nlt,nct,nambu=0,scty=0  ! some parameters: site - number of sites, dim - number of cluster dimensions (usually 2)
+                                              ! nlt - number of hopping relation for lattice, nct - number of hopping relation for cluster
+                                              ! nambu - flag for nambu representation (work for calculation of SC)
+                                              ! scty - type of SC (work with nambu=1)
+    real,pointer,dimension(:,:)::coordinate ! coordinates of the cluster sites
+    real,pointer,dimension(:,:)::vector     ! translation vector of the cluster
+    integer,pointer,dimension(:,:)::lattice ! hopping relation for lattices
+    integer,pointer,dimension(:,:)::cluster ! hopping relation for clusters
+    real(8),pointer,dimension(:)::lt,ct     ! the final hopping matrix for lattice and cluster
+    real(8)::lmu=0.d0,U=0.d0,Tep=0.d0   ! parameters for lattices
+    real(8)::cmu=0.d0,shift=0.d0,M=0.d0,delta=0.d0,D=0.d0,h=0.d0,VSO=0.00   ! parameters for clusters
+    character(len=20)::SY=""    ! a string to store the types of Weiss field included
   end type hop
 
   contains
 
-  subroutine cluster_site(cl,n,a)
-    type(hop)::cl
-    integer::n,dim
-    real,dimension(*)::a
-    dim=cl%dim
-    a(1:dim)=cl%coordinate(1:dim,n)
-  end subroutine
-
-  function cluster_site_distance(dim,a,b) result(r)
-    integer::dim,i
-    real,dimension(dim)::a,b
-    real::r
-    r=0
-    do i=1,dim
-      r=r+(a(i)-b(i))*(a(i)-b(i))
-    end do
-    r=sqrt(r)
-  end function
-
-  function cluster_distance(cl,i,j) result(r)
-    type(hop)::cl
-    integer::dim,i,j
-    real(8)::r
-    r=-1.0
-    if(i>cl%site.or.j>cl%site) return
-    dim=cl%dim
-    r=cluster_site_distance(dim,cl%coordinate(1:dim,i),cl%coordinate(1:dim,j))
-  end function
-
+  ! delete the cluster object from the memory
   subroutine cluster_delete(cl)
     type(hop),pointer::cl
     deallocate(cl%coordinate)
@@ -57,6 +64,14 @@ module hop_mod
     deallocate(cl)
   end subroutine
 
+  ! initialize a cluster in the memory
+  ! two external files are required:
+  !   cluster.input
+  ! This file include the name of cluster and hopping information 
+  ! of the cluster and the lattice
+  !   XXX.conf
+  ! XXX is the name of the cluster. It must be the same as the 
+  ! name that shows up in cluster.input
   function cluster_init() result(cl)
     type(hop),pointer::cl
     character(len=20)::filename,sy,rc,a
@@ -64,9 +79,13 @@ module hop_mod
     complex(8),pointer::test(:,:)
     integer::site,dim,i,j,k,ierr
     allocate(cl)
+
+    ! read cluster.input file
     open(unit=8,file='cluster.input',status='old',action='read')
     read(8,*) rc
+    ! find out the name of cluster XXX
     filename=trim(adjustl(rc))//'.conf'
+    ! read XXX.conf file
     open(unit=7,file=trim(adjustl(filename)),status='old',action='read')
     read(7,*)
     read(7,*) dim
@@ -77,10 +96,12 @@ module hop_mod
     allocate(cl%coordinate(dim,site))
     allocate(cl%vector(dim,dim))
     read(7,*)
+    ! read coordinates of the cluster sites
     do i=1,site
       read(7,*) cl%coordinate(1:dim,i)
     end do
     read(7,*)
+    ! read translation vectors of the cluster
     do i=1,dim
       read(7,*) cl%vector(1:dim,i)
     end do
@@ -97,6 +118,7 @@ module hop_mod
     do j=1,i+1
       backspace(8)
     end do
+    ! read hopping relations of the lattice
     allocate(cl%lattice(5,i-1))
     k=0
     cl%nlt=i-1
@@ -125,6 +147,7 @@ module hop_mod
     do j=1,i+1
       backspace(8)
     end do
+    ! read hopping relations for the cluster
     allocate(cl%cluster(3,i-1))
     k=0
     cl%nct=i-1
@@ -139,6 +162,7 @@ module hop_mod
     end do
     read(8,*)
     read(8,*) rc,cl%cmu
+    ! deal with any inputs of Weiss fields
     do
       read(8,*,iostat=ierr) sy
       if(ierr/=0) exit
@@ -167,6 +191,14 @@ module hop_mod
     close(8)
   end function
   
+  ! update the hopping matrix
+  !
+  ! input:
+  ! cl - type(hop): a pointer to a cluster object
+  !
+  ! output:
+  ! tprime - complex(8): a poniter to a hopping matrix
+  !                      with dimension = site*2 
   function cluster_update(cl) result(tprime)
     implicit none
     type(hop),pointer::cl
@@ -211,6 +243,7 @@ module hop_mod
     end do
   end function
 
+  ! AF Weiss field
   subroutine cluster_AF(cl,tprime)
     implicit none
     type(hop),pointer::cl
@@ -236,6 +269,7 @@ module hop_mod
     print *,""
   end subroutine
 
+  ! Rashiba Weiss field
   subroutine cluster_RS(cl,tprime)
     implicit none
     type(hop),pointer::cl
@@ -255,15 +289,13 @@ module hop_mod
       v(1:2)=cl%coordinate(1:2,i)-cl%coordinate(1:2,j)
       if(abs(v(1)-3)<1.d-5) v(1)=1.d0
       if(abs(v(1))<1.d-5.or.abs(v(2)-1)<1.d-5) then
-        l=abs(v(2))/v(2)
-        tprime(i,j+site)=tprime(i,j+site)+cl%VSO*Xi*l
-        tprime(i+site,j)=tprime(i+site,j)+cl%VSO*Xi*l
+        tprime(i,j+site)=tprime(i,j+site)+cl%VSO*Xi
+        tprime(i+site,j)=tprime(i+site,j)+cl%VSO*Xi
         tprime(j+site,i)=conjg(tprime(i,j+site))
         tprime(j,i+site)=conjg(tprime(i+site,j))
       else if(abs(v(2))<1.d-5.or.abs(v(1)-1)<1.d-5) then
-        l=abs(v(1))/v(1)
-        tprime(i,j+site)=tprime(i,j+site)-cl%VSO*l
-        tprime(i+site,j)=tprime(i+site,j)+cl%VSO*l
+        tprime(i,j+site)=tprime(i,j+site)+cl%VSO
+        tprime(i+site,j)=tprime(i+site,j)-cl%VSO
         tprime(j+site,i)=conjg(tprime(i,j+site))
         tprime(j,i+site)=conjg(tprime(i+site,j))
       end if
@@ -272,6 +304,7 @@ module hop_mod
     call print_matrix(tprime,site,1,0)
   end subroutine
 
+  ! SC Weiss field
   subroutine cluster_SC(cl,tprime)
     implicit none
     type(hop),pointer::cl
@@ -352,6 +385,7 @@ module hop_mod
     end select
   end subroutine
   
+  ! nematic Weiss field
   subroutine cluster_NM(cl,i,j,tprime)
     implicit none
     type(hop),pointer::cl
@@ -364,6 +398,7 @@ module hop_mod
     end do
   end subroutine
   
+  ! spiral Weiss field
   subroutine cluster_SP(cl,tprime)
     implicit none
     type(hop),pointer::cl
@@ -387,6 +422,40 @@ module hop_mod
     end do
     deallocate(e)
   end subroutine
+
+  ! return the coordinates of all the sites of the cluster
+  subroutine cluster_site(cl,n,a)
+    type(hop)::cl
+    integer::n,dim
+    real,dimension(*)::a
+    dim=cl%dim
+    a(1:dim)=cl%coordinate(1:dim,n)
+  end subroutine
+
+  ! calculate distance between two sites a and b
+  ! a and b are 2D coordinate of the two sites
+  function cluster_site_distance(dim,a,b) result(r)
+    integer::dim,i
+    real,dimension(dim)::a,b
+    real::r
+    r=0
+    do i=1,dim
+      r=r+(a(i)-b(i))*(a(i)-b(i))
+    end do
+    r=sqrt(r)
+  end function
+
+  ! calculate distance between two sites with
+  ! indices i and j
+  function cluster_distance(cl,i,j) result(r)
+    type(hop)::cl
+    integer::dim,i,j
+    real(8)::r
+    r=-1.0
+    if(i>cl%site.or.j>cl%site) return
+    dim=cl%dim
+    r=cluster_site_distance(dim,cl%coordinate(1:dim,i),cl%coordinate(1:dim,j))
+  end function
 
 end module hop_mod
 
