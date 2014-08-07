@@ -1,16 +1,78 @@
+!--------------------------------------------------
+!
+! vca.F90
+! module: VCA
+! requirement: hubbard_mod,lehmann,qnewton
+!
+! created by Kun Fang
+!
+! This module provides several of user interfaces for the VCA 
+! calculations, including VCA variational calculation, electron
+! density (concentration), spectral function, DOS, fermi surface.
+! These interfaces are tested and relatively reliable. I have 
+! deleted some old subroutines, because they are written for a 
+! single task and not quite reliable.
+!
+!------------------------------------------------------
+
 module VCA
   use hubbard_mod
   use lehmann
   use qnewton
   complex(8),private,parameter::Zero=(0.0,0.0),One=(1.0,0.0),Xi=(0.0,1.0)
   real(8),private,parameter::eps=0.001
-  integer,private,parameter::nk=20
-  integer,private::initm=150
+  integer,private,parameter::nk=20    ! the number of k-space points in one direction
+  integer,private::initm=150    ! the number of eigenstates that will be calculated
   
   type(hubbard_cluster_type),pointer,private::cluster=>NULL()
 
   contains
 
+  ! connect a cluster object to this module
+  ! this is a must before you do any VCA calculation
+  ! 
+  ! input:
+  ! p - type(hubbard_cluster_type): the cluster object
+  !                    you want to make connections
+  !
+  ! output:
+  ! OK - logical: whether the connection is successful
+  function VCA_connect_cluster(p) result(OK)
+    implicit none
+    type(hubbard_cluster_type),pointer::p
+    logical::OK
+    OK=.false.
+    if(.not.associated(p)) return
+    cluster=>p
+    OK=.true.
+  end function
+  
+  ! disconnect the cluster
+  subroutine VCA_disconnect_cluster()
+    implicit none
+    cluster=>NULL()
+  end subroutine
+
+  ! variational process of VCA calculation
+  ! The variational calculation is performed using quasi-newton
+  ! method to find out stationary points in a self-energy space.
+  ! The way to connect this subroutine with quasi-newton 
+  ! subroutine is really ugly because of the restrictions of 
+  ! FORTRAN language. The connection requires a user-defined
+  ! type PointArray which is used to create an array of pointers
+  ! so that the quasi-newton subroutine can directly change 
+  ! values of variational parameters. in subroutine varinit, you
+  ! have to assign variational parameters to the pointer array
+  ! before beginning of quasi-newton calculation.
+  ! 
+  ! input:
+  ! omega - real(8): the value of this input is not important
+  !
+  ! output:
+  ! omega - real(8): the grand potential of the system obtained
+  !                  from variational calculation
+  ! OK - logical: indication whether the variational calculation
+  !               is successful
   function VCA_optimal(omega) result(OK)
     implicit none
     integer::n_var,i,ie
@@ -39,6 +101,17 @@ module VCA
     deallocate(v)
   end function
   
+  ! This subroutine is used to assign variational parameters
+  ! to an array of pointer
+  ! 
+  ! input:
+  ! n - integer: number of variational parameters
+  ! v - type(PointArray),pointer: an initialized array of 
+  !               pointers
+  ! 
+  ! output:
+  ! v - type(PointArray),pointer: an array of pointers that holds
+  !               memory address of all the variational parameters
   subroutine varinit(n,v)
     implicit none
     type(PointArray),pointer::v(:)
@@ -51,21 +124,12 @@ module VCA
     !write(7,*) "n=",n
   end subroutine
 
-  function VCA_connect_cluster(p) result(OK)
-    implicit none
-    type(hubbard_cluster_type),pointer::p
-    logical::OK
-    OK=.false.
-    if(.not.associated(p)) return
-    cluster=>p
-    OK=.true.
-  end function
-  
-  subroutine VCA_disconnect_cluster()
-    implicit none
-    cluster=>NULL()
-  end subroutine
-
+  ! calculate the potthoff functional of a a system
+  ! there is no variational calculation in this subroutine
+  !
+  ! output:
+  ! x - real(8): potthoff functional or grandpotential if the 
+  !           system is optimized
   function VCA_potthoff_functional() result(x)
     implicit none
     type(Q_type),pointer::Q
@@ -73,7 +137,6 @@ module VCA
     integer::orbit
     if(.not.associated(cluster)) return
     orbit=cluster%nsite
-    !---> spin up
     Q=>lehmann_init(cluster,omega,initm)
     if(.not.associated(Q)) return
     x=(omega+lehmann_potthoff_functional(cluster,Q)+cluster%hop%shift)/orbit
@@ -81,6 +144,12 @@ module VCA
     call lehmann_Q_clean(Q)
   end function
 
+  ! calculate the electron density (concentration) of a 
+  ! system. The result is valid only if the system is already
+  ! optimized.
+  ! 
+  ! output:
+  ! density - real(8): electron density
   function VCA_particle_density() result(density)
     implicit none
     type(Q_type),pointer::Q
@@ -94,11 +163,17 @@ module VCA
     call lehmann_Q_clean(Q)
   end function
 
+  ! calculate the VCA based spectral function of a system.
+  ! The subroutine is set to scan spectral function between
+  ! several k-points. You have to define these points first.
+  ! change these in the following program.
+  !
+  ! the output will be a file named "spectr.data"
   subroutine VCA_spectral_function()
     implicit none
     type(Q_type),pointer::Q,p
     real(8)::omega,x,kx,ky,w,Pi,dx,dy,leng,kp(2,4)
-    integer::orbit,i,j,k
+    integer::orbit,i,j,k,npoint
     complex(8),pointer,dimension(:,:)::G,gl
     if(.not.associated(cluster)) return
     orbit=cluster_get_n_orbit(cluster)
@@ -110,6 +185,10 @@ module VCA
     kx=0.d0
     ky=0.d0
     Pi=asin(1.d0)*2
+
+    !------------------------------------
+    ! change the following for different lattices
+    npoint=4
     kp(1,1)=0.d0
     kp(2,1)=0.d0
     kp(1,2)=0.d0
@@ -118,8 +197,9 @@ module VCA
     kp(2,3)=sqrt(3.d0)*PI/3
     kp(1,4)=0.d0
     kp(2,4)=0.d0
+    !-----------------------------------
 
-    do i=1,3
+    do i=1,npoint-1
       kx=kp(1,i)
       ky=kp(2,i)
       dy=kp(2,i+1)-kp(2,i)
@@ -152,6 +232,14 @@ module VCA
     close(7)
   end subroutine
 
+  ! Scan the DOS of the system.
+  ! 
+  ! input:
+  ! Emin - real(8): the minimum energy of this calculation
+  ! Emax - real(8): the maximum energy of this calculation
+  ! bin - integer: number of energy slot that will be calculated
+  !
+  ! output will a file named "DOS.data"
   subroutine VCA_DOS(Emin,Emax,bin)
     implicit none
     type(Q_type),pointer::Q,p,a
@@ -209,6 +297,11 @@ module VCA
     call lehmann_Q_clean(Q)
   end subroutine
 
+  ! calculate the fermi surface of the system
+  ! the calculation is setup to calculation within a square
+  ! in the 2D k-space: from (-pi,-pi) to (pi,pi)
+  !
+  ! output will be a file named "fermi.data"
   subroutine VCA_fermi_surface()
     implicit none
     type(Q_type),pointer::Q,p,a

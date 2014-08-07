@@ -1,3 +1,25 @@
+!--------------------------------------------------
+!
+! underwood.F90
+! module: underwood_mod
+! requirements: rand_mod
+!
+! created by Kun Fang
+!
+! This is the core module for block-lanczos method which can
+! solve the eigenproblem of a real symmetric or complex 
+! hermitian matrix. The subroutines in this module is revised
+! based on the famous block lanczos subroutines written by 
+! Richard Underwood. His program can only deal with real 
+! symmetric matrix. I made neccessary changes so that it can 
+! be used on complex hermitian matrices.
+!
+! The only interface provided in the module is the first 
+! subroutine: MINVAL. Please refer to the introductions below
+! for usage of the interface.
+!
+!------------------------------------------------------
+
 module underwood_mod
 
   integer,private,parameter::INMAX=1000000

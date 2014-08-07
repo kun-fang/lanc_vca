@@ -1,3 +1,15 @@
+!--------------------------------------------------
+!
+! timer.F90
+! module: timer_mod
+! requirement: none
+!
+! created by Kun Fang
+!
+! This module create an object to count the runtime.
+!
+!
+!------------------------------------------------------
 module timer_mod
   implicit none
   
@@ -6,6 +18,8 @@ module timer_mod
   contains
 
 !----------------------public-----------------------
+
+  ! initialize the timer
   subroutine timer_init()
     implicit none
     real,dimension(2)::t
@@ -17,6 +31,8 @@ module timer_mod
     !print *,t(2)
   end subroutine
 
+  ! return the cpu runtime from initialization 
+  ! of the timer.
   function cputime() result(x)
     implicit none
     real,dimension(2)::t

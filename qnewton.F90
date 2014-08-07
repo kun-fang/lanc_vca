@@ -1,3 +1,25 @@
+!--------------------------------------------------
+!
+! qnewton.F90
+! module: qnewton
+! requirement: rand_mod
+!
+! created by Kun Fang
+!
+! This module is used to perform variational calculations. This
+! module uses the quasi-newton method to find out the stationary
+! points of a function. Please refer to the wikipedia page for 
+! details of this method.
+!
+! This module is setup to find out saddle points in the function
+! space.
+!
+!
+! type
+! PointArray
+!
+!------------------------------------------------------
+
 module qnewton
   use rand_mod
   implicit none
@@ -15,6 +37,19 @@ module qnewton
 
 contains
 
+  ! Connect your functions to this module for variational
+  ! calculations. This is required before using this 
+  ! module.
+  !
+  ! input:
+  ! n_para - integer: number of parameters in the variational 
+  !                   calculation
+  ! para - type(PointArray),pointer: an array of pointers to 
+  !              the parameters used in the calculation
+  ! 
+  ! output:
+  ! para - type(PointArray),pointer: an array of pointers to
+  !         the final results of the variational calculations
   function qnewton_connect(n_para,para) result(OK)
     implicit none
     integer::n_para,i
@@ -31,6 +66,9 @@ contains
     OK=.true.
   end function
   
+  ! disconnect the function from this module
+  ! it is recommended after you finish the variational 
+  ! calculation
   subroutine qnewton_disconnect()
     implicit none
     vari_para=>NULL()
@@ -38,6 +76,15 @@ contains
     deallocate(var)
   end subroutine
   
+  ! the function that will be applied to the calculation
+  ! 
+  ! input:
+  ! n - integer: number of parameters
+  ! var - real(8): an array to store the parameters
+  ! f - real(8),external: the function that will be evaluated
+  !
+  ! output:
+  ! x - real(8): result of the function f.
   function FucVal(n,var,f) result(x)
     integer::n,i
     real(8)::var(n),x
@@ -48,6 +95,7 @@ contains
     x=f()
   end function
   
+
   subroutine qnewton_run(f,fx,conv)
   !---------------------------------------------------
   !

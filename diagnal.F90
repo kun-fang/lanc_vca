@@ -1,6 +1,6 @@
 !--------------------------------------------------
 !
-! basis.F90
+! diagnal.F90
 ! module: diagnal
 ! requirements: none
 !

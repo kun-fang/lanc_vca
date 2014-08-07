@@ -1,9 +1,25 @@
+!--------------------------------------------------
+!
+! random.F90
+! module: rand_mod
+! requirement: none
+!
+! created by Kun Fang
+!
+! This module provides interfaces to create random numbers
+! and random vectors. This program is required by underwood 
+! module so that the Lanczos method can run correctly.
+!
+!
+!------------------------------------------------------
+
 module rand_mod
   implicit none
   
-  integer,save,private::seed=0
-  real(8),save,private::rand=0.0
-  logical,save,private::init=.false.
+  ! some parameters
+  integer,save,private::seed=0        ! random seed
+  real(8),save,private::rand=0.0      ! last random number obtaind
+  logical,save,private::init=.false.  ! flag for whether the module is initialized
   
   public::random_n,random_vector
   private::init_seed,new_seed
@@ -12,6 +28,14 @@ module rand_mod
   
 !-----------------------------public-----------------------------
 
+  ! extract a random number within a range
+  ! 
+  ! input:
+  ! a - real(8),optional: lower bound of the random number
+  ! b - real(8),optional: upper bound of the random number
+  !
+  ! output:
+  ! x - real(8): the required random number
   function random_n(a,b) result(x)
     real(8),intent(in),optional::a,b
     real(8)::x
@@ -24,6 +48,16 @@ module rand_mod
     end if
   end function
 
+  ! create a random vector
+  ! 
+  ! input:
+  ! n - integer: dimension of the vector
+  ! a - real(8): length of the vector
+  ! x - real(8): a real vector
+  ! 
+  ! output:
+  ! x - real(8): a real random vector with length
+  !              equal to a
   subroutine random_vector(n,a,x)
     integer::n,i
     real(8)::a,sum,x(n)
